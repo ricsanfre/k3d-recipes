@@ -1,13 +1,17 @@
 # K3D recipes
 
+[k3d](https://k3d.io/) is a lightweight wrapper to run k3s (Rancher Lab’s minimal Kubernetes distribution) in docker.
+
+This repo contains a set of recipes to configure and use k3d in different use cases.
+
 ## K3D installation
 
 ### Installation requirements
 
 K3d requires to have installed the following components
 
-- docker
-- kubectl
+- [docker](https://docs.docker.com/engine/install/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 
 ### Installation procedure
 
@@ -38,7 +42,7 @@ And execute
 k3d cluster create -c k3d-cluster.yml
 ```
 
-## K3D behind a corporat HTTP proxy
+## K3D behind a corporate HTTP proxy
 
 HTTP_PROXY and HTTPS_PROXY environment variables need to be passed to k3d containers 
 
