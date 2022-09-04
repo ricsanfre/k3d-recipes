@@ -30,7 +30,7 @@ Create config file containing configuration of the cluster
 ```yml
 apiVersion: k3d.io/v1alpha3
 kind: Simple
-name: mycluster_simple
+name: mycluster-simple
 servers: 1
 agents: 2
 ```
@@ -52,7 +52,7 @@ As stated in [K3d FAQ](https://k3d.io/v5.2.1/faq/faq/#running-behind-a-corporate
 ```yml
 apiVersion: k3d.io/v1alpha3
 kind: Simple
-name: mycluster_behind_corporate_proxy
+name: mycluster-behind-corporate-proxy
 servers: 1
 agents: 2
 volumes:
@@ -74,7 +74,7 @@ Within configuratoin file set the parameters under `options.k3s.extraArgs`
 ```yml
 apiVersion: k3d.io/v1alpha3
 kind: Simple
-name: mycluster_with_metrics_exposed
+name: mycluster-with-metrics-exposed
 servers: 1
 agents: 2
 options:
@@ -99,7 +99,7 @@ For making accesible in localhost at 0.0.0.0:8080 the k3s loadbalancer where tra
 ```yml
 apiVersion: k3d.io/v1alpha3
 kind: Simple
-name: mycluster_with_traefik_ingress_accesible
+name: mycluster-with-traefik-ingress-accesible
 servers: 1
 agents: 2
 ports:
