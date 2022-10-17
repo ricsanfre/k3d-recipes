@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fluent
+  name: java-container-exception-generator
+  labels:
+    app: java-container-exception-generator
+spec:
+  selector:
+    matchLabels:
+      app: java-container-exception-generator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: java-container-exception-generator
+    spec:
+      containers:
+      - name: java-container-exception-generator
+        imagePullPolicy: Always
+        image: jlamoree/java-container-exception-generator
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
