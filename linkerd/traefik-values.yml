@@ -1,0 +1,10 @@
+---
+additionalArguments:
+  - "--metrics.prometheus=true"
+  - "--accesslog"
+  - "--accesslog.format=json"
+  - "--accesslog.filepath=/data/access.log"
+deployment:
+  podAnnotations:
+    linkerd.io/inject: ingress
+    config.linkerd.io/skip-outbound-ports: "443"

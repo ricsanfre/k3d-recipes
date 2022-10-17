@@ -1,0 +1,54 @@
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stripprefix
+  namespace: monitoring
+spec:
+  stripPrefix:
+    prefixes:
+      - "/prometheus"
+      - "/alertmanager"
+      - "/grafana"
+    forceSlash: false
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`monitoring.internal`) && PathPrefix(`/prometheus`)
+    services:
+    - name: kube-prometheus-stack-prometheus
+      port: 9090
+      namespace: monitoring
+    middlewares:
+      - name: stripprefix
+        namespace: monitoring
+
+  - kind: Rule
+    match: Host(`monitoring.internal`) && PathPrefix(`/alertmanager`)
+    services:
+    - name: kube-prometheus-stack-alertmanager
+      port: 9093
+      namespace: monitoring
+    middlewares:
+      - name: stripprefix
+        namespace: monitoring
+  - kind: Rule
+    match: Host(`monitoring.internal`) && PathPrefix(`/grafana`)
+    services:
+    - name: kube-prometheus-stack-grafana
+      port: 80
+      namespace: monitoring
+    middlewares:
+      - name: stripprefix
+        namespace: monitoring
+  
