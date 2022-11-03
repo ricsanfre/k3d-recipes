@@ -1,0 +1,15 @@
+loki:
+  auth_enabled: false
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+    lokiCanary:
+      enabled: false
+  serviceMonitor:
+    enabled: false
+test:
+  enabled: false
+minio:
+  enabled: false
