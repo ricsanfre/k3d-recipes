@@ -3,8 +3,29 @@ additionalArguments:
   - "--metrics.prometheus=true"
   - "--accesslog"
   - "--accesslog.format=json"
+  - "--accesslog.fields.headers.defaultmode=keep"
   - "--accesslog.filepath=/data/access.log"
 deployment:
   podAnnotations:
     linkerd.io/inject: ingress
     config.linkerd.io/skip-outbound-ports: "443"
+  additionalContainers:
+    - name: stream-accesslog
+      image: busybox
+      args:
+      - /bin/sh
+      - -c
+      - tail -n+1 -F /data/access.log
+      imagePullPolicy: Always
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /data
+        name: data
+tracing:
+  zipkin:
+    httpEndpoint: http://tempo-distributor.tempo.svc.cluster.local:9411/api/v2/spans
+    sameSpan: true
+    id128Bit: true
+    sampleRate: 1.0

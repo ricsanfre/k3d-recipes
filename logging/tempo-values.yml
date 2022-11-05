@@ -1,0 +1,48 @@
+
+# Enable trace ingestion
+traces:
+  otlp:
+    grpc:
+      enabled: true
+    http:
+      enabled: true
+  zipkin:
+    enabled: true
+  jaeger:
+    thriftCompact:
+      enabled: true
+    thriftHttp:
+      enabled: true
+  opencensus:
+    enabled: true
+storage:
+  trace:
+    backend: s3
+    s3:
+      bucket: tempo-traces
+      endpoint: tempo-minio:9000
+      access_key: tempo
+      secret_key: supersecret
+      insecure: true
+distributor:
+  config:
+    log_received_spans:
+      enabled: true
+
+minio:
+  enabled: true
+  mode: standalone
+  secretKey: supersecret
+  accessKey: tempo
+  rootUser: tempo
+  rootPassword: supersecret
+  buckets:
+    - name: tempo-traces
+      policy: none
+      purge: false
+    - name: enterprise-traces
+      policy: none
+      purge: false
+    - name: enterprise-traces-admin
+      policy: none
+      purge: false

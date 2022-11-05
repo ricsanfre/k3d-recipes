@@ -5,4 +5,9 @@ datasources:
     datasources:
     - name: Loki
       type: loki
+      access: proxy
       url: http://loki-gateway.loki.svc.cluster.local
+    - name: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo-query-frontend.tempo.svc.cluster.local:3100
