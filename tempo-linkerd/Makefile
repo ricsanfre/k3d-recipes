@@ -6,6 +6,8 @@ helm-setup:
 	helm repo add linkerd https://helm.linkerd.io/stable
 	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo add traefik https://helm.traefik.io/traefik
+	helm repo add fluent https://fluent.github.io/helm-charts
+	helm repo update
 	
 linkerd-install:
 	kubectl create namespace linkerd
