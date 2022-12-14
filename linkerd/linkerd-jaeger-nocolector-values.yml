@@ -1,7 +1,0 @@
-collector:
-  enabled: false # We don't need the collector, we can just ship it directly to Tempo
-jaeger:
-  enabled: false # We don't need the Jaeger UI, we'll just use Grafana
-webhook:
-  collectorSvcAddr: tempo-distributor.tempo.svc.cluster.local:55678 # Replace with the FQDN:Port of your Tempo Distributor service
-  collectorSvcAccount: tempo # Replace with the ServiceAccount Tempo is running with
