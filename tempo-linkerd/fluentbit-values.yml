@@ -1,0 +1,129 @@
+---
+# fluentbit helm chart values
+
+image:
+  tag: 2.0.2
+
+daemonSetVolumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+
+daemonSetVolumeMounts:
+  - name: varlog
+    mountPath: /var/log
+
+# Fluentbit config
+config:
+  # fluent-bit.config SERVICE. **NOTE 2**
+  # Helm chart defaults are Ok
+  service: |
+     [SERVICE]
+       Daemon Off
+       Flush 1
+       Log_Level info
+       Parsers_File parsers.conf
+       Parsers_File custom_parsers.conf
+       HTTP_Server On
+       HTTP_Listen 0.0.0.0
+       HTTP_Port 2020
+       Health_Check On
+       # Log_Level debug
+  # fluent-bit.config INPUT. **NOTE 3**
+  inputs: |
+
+    [INPUT]
+        Name tail
+        Path /var/log/containers/*.log
+        Path_Key filename
+        multiline.parser cri
+        Tag kube.*
+        DB /var/log/flb_kube.db
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines True
+
+    [INPUT]
+        Name tail
+        Tag host.*
+        Path /var/log/auth.log, /var/log/syslog
+        Path_Key filename
+        DB /var/log/flb_host.db
+        Parser syslog-rfc3164-nopri
+
+  # fluent-bit.config OUTPUT **NOTE 4**
+  outputs: |
+
+    [OUTPUT]
+        Name forward
+        match *
+        Host fluentd
+        Port 24224
+
+  customParsers: |
+
+    [PARSER]
+        Name syslog-rfc3164-nopri
+        Format regex
+        Regex /^(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$/
+        Time_Key time
+        Time_Format %b %d %H:%M:%S
+        Time_Keep False
+
+  filters: |
+
+    [FILTER]
+        name                  multiline
+        match                 *
+        multiline.key_content log
+        multiline.parser      go, java, python
+
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log True
+        Merge_Log_Trim False
+        Merge_Log_Key log_processed
+        Keep_Log False
+        K8S-Logging.Parser True
+        K8S-Logging.Exclude True
+        Labels True
+        Annotations False
+
+    [FILTER]
+        Name modify
+        Match kube.*
+        Remove _p
+
+    [FILTER]
+        name lua
+        match host.*
+        script /fluent-bit/scripts/adjust_ts.lua
+        call local_timestamp_to_UTC
+
+    [FILTER]
+        Name modify
+        Match host.*
+        Rename message content
+
+luaScripts:
+  adjust_ts.lua: |
+    function local_timestamp_to_UTC(tag, timestamp, record)
+        local utcdate   = os.date("!*t", ts)
+        local localdate = os.date("*t", ts)
+        localdate.isdst = false -- this is the trick
+        utc_time_diff = os.difftime(os.time(localdate), os.time(utcdate))
+        return 1, timestamp - utc_time_diff, record
+    end
+
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+
+initContainers:
+  - name: init-log-directory
+    image: busybox
+    command: ['/bin/sh', '-c', 'if [ ! -d /var/log/fluentbit ]; then mkdir -p /var/log/fluentbit; fi']
+    volumeMounts:
+      - name: varlog
+        mountPath: /var/log
