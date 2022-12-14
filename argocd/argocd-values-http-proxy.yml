@@ -1,0 +1,70 @@
+configs:
+  cm:
+    statusbadge.enabled: 'true'
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.health ~= nil then
+          hs.status = obj.status.health.status
+          if obj.status.health.message ~= nil then
+            hs.message = obj.status.health.message
+          end
+        end
+      end
+      return hs
+
+server:
+  env:
+    - name: HTTP_PROXY
+      value: http://192.168.56.15:4567
+    - name: HTTPS_PROXY
+      value: http://192.168.56.15:4567
+    - name: NO_PROXY
+      value: argocd-repo-server,argocd-application-controller,argocd-metrics,argocd-server,argocd-server-metrics,argocd-redis,argocd-dex-server,10.0.0.0/8 
+  volumeMounts:
+    - name: custom-ca-certificates
+      mountPath: /etc/ssl/certs/custom-ca-certificates.crt
+      subPath: custom-ca-certificates.crt
+  volumes:
+    - name: custom-ca-certificates
+      secret:
+        defaultMode: 420
+        secretName: custom-ca-certificates
+repoServer:
+  env:
+    - name: HTTP_PROXY
+      value: http://192.168.56.15:4567
+    - name: HTTPS_PROXY
+      value: http://192.168.56.15:4567
+    - name: NO_PROXY
+      value: argocd-repo-server,argocd-application-controller,argocd-metrics,argocd-server,argocd-server-metrics,argocd-redis,argocd-dex-server,10.0.0.0/8
+  volumeMounts:
+    - name: custom-ca-certificates
+      mountPath: /etc/ssl/certs/custom-ca-certificates.crt
+      subPath: custom-ca-certificates.crt
+  volumes:
+    - name: custom-ca-certificates
+      secret:
+        defaultMode: 420
+        secretName: custom-ca-certificates
+controller:
+  volumeMounts:
+    - name: custom-ca-certificates
+      mountPath: /etc/ssl/certs/custom-ca-certificates.crt
+      subPath: custom-ca-certificates.crt
+  volumes:
+    - name: custom-ca-certificates
+      secret:
+        defaultMode: 420
+        secretName: custom-ca-certificates
+
+dex:
+  env:
+    - name: HTTP_PROXY
+      value: http://192.168.56.15:4567
+    - name: HTTPS_PROXY
+      value: http://192.168.56.15:4567
+    - name: NO_PROXY
+      value: argocd-repo-server,argocd-application-controller,argocd-metrics,argocd-server,argocd-server-metrics,argocd-redis,argocd-dex-server,10.0.0.0/8 
