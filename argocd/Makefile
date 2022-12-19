@@ -11,8 +11,7 @@ argocd-install:
 	kubectl create namespace argocd
 	helm install argocd argo/argo-cd  --namespace argocd -f argocd-values.yml
 
-argocd-install-behindproxy:
-    # Run argocd behind proxy: https://github.com/argoproj/argo-cd/issues/7572
-    kubectl create namespace argocd
-    kubectl create secret generic custom-ca-certificates --from-file=custom-ca-certificates.crt=/etc/ssl/certs/huawei-ca.pem -n argocd
-    helm install argocd argo/argo-cd  --namespace argocd -f argocd-values-http-proxy.yml
+argocd-install-behindproxy: # Run argocd behind proxy: https://github.com/argoproj/argo-cd/issues/7572
+	kubectl create namespace argocd
+	kubectl create secret generic custom-ca-certificates --from-file=custom-ca-certificates.crt=/etc/ssl/certs/huawei-ca.pem -n argocd
+	helm install argocd argo/argo-cd  --namespace argocd -f argocd-values-http-proxy.yml
