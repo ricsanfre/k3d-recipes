@@ -1,5 +1,5 @@
 linkerd-certs:
-    step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure
+	step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure
 	step certificate create identity.linkerd.cluster.local issuer.crt issuer.key --profile intermediate-ca --not-after 8760h --no-password --insecure --ca ca.crt --ca-key ca.key
 
 helm-setup:
@@ -15,7 +15,7 @@ linkerd-install:
 	helm install linkerd-control-plane -n linkerd --set-file identityTrustAnchorsPEM=ca.crt --set-file identity.issuer.tls.crtPEM=issuer.crt --set-file identity.issuer.tls.keyPEM=issuer.key linkerd/linkerd-control-plane
 
 tempo-install:
-    kubectl create namespace tempo
+	kubectl create namespace tempo
 	helm install tempo grafana/tempo-distributed --namespace tempo -f tempo-values.yml
 
 loki-install:
@@ -23,12 +23,12 @@ loki-install:
 	helm install loki grafana/loki --namespace loki -f loki-values.yml
 
 fluent-install:
-    kubectl create namespace fluent
+	kubectl create namespace fluent
 	helm install fluentd fluent/fluentd -f fluentd-values.yml -n fluent
 	helm install fluent-bit fluent/fluent-bit -f fluentbit-values.yml -n fluent
 
 traefik-install:
-    # install traefik exporting traces to tempo
+	# install traefik exporting traces to tempo
 	kubectl create namespace traefik
 	helm install traefik traefik/traefik --create-namespace -n traefik -f traefik-values.yml
 
