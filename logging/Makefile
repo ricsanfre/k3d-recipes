@@ -20,7 +20,7 @@ get-es-passwd:
 	kubectl get secret efk-es-elastic-user -o jsonpath='{.data.elastic}' -n logging | base64 -d;echo
 
 kibana-port-forward:
-	kubectl port-forward svc/kibana-kb-http 5601:5601 -n es
+	kubectl port-forward svc/kibana-kb-http 5601:5601 -n logging
 
 loki-install:
 	kubectl create namespace logging
