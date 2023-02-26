@@ -1,0 +1,42 @@
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: efk
+  namespace: logging
+spec:
+  version: 8.6.0
+  nodeSets:
+  - name: default
+    count: 1    # One node elastic search cluster
+    config:
+      node.store.allow_mmap: false # Disable memory mapping
+    volumeClaimTemplates: 
+      - metadata:
+          name: elasticsearch-data
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
+  http:
+    tls: # Disabling TLS automatic configuration. Note(3)
+      selfSignedCertificate:
+        disabled: true
+
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: logging
+spec:
+  version: 8.6.0
+  count: 1
+  elasticsearchRef:
+    name: "efk"
+  http:  # NOTE disabling kibana automatic TLS configuration
+    tls:
+      selfSignedCertificate:
+        disabled: true
