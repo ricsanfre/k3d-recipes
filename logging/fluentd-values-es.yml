@@ -4,7 +4,7 @@
 image:
   repository: "ricsanfre/fluentd-aggregator"
   pullPolicy: "IfNotPresent"
-  tag: "v1.15.2-debian-1.0"
+  tag: "es-7.0"
 
 # Deploy fluentd as deployment
 kind: "Deployment"
@@ -43,12 +43,7 @@ env:
       secretKeyRef:
         name: "efk-es-elastic-user"
         key: elastic
-  # Setting a index-prefix for fluentd. By default index is logstash
-  - name: FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX
-    value: fluentd
-  - name: FLUENT_ELASTICSEARCH_LOG_ES_400_REASON
-    value: "true"
- 
+
 # Volumes and VolumeMounts (only configuration files and certificates)
 volumes:
   - name: etcfluentd-main
@@ -59,12 +54,17 @@ volumes:
     configMap:
       name: fluentd-config
       defaultMode: 0777
-
+  - name: etcfluentd-template
+    configMap:
+      name: fluentd-template
+      defaultMode: 0777
 volumeMounts:
   - name: etcfluentd-main
     mountPath: /etc/fluent
   - name: etcfluentd-config
     mountPath: /etc/fluent/config.d/
+  - name: etcfluentd-template
+    mountPath: /etc/fluent/template
 
 # Service. Exporting forwarder port (Metric already exposed by chart)
 service:
@@ -186,31 +186,64 @@ fileConfigs:
       </filter>
       # Send received logs to elasticsearch
       <match **>
-        @type elasticsearch_data_stream
+        @type elasticsearch
         @id out_es
         @log_level info
-        data_stream_name fluentd
         include_tag_key true
         host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
         port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
         scheme http
         user "#{ENV['FLUENT_ELASTICSEARCH_USER'] || use_default}"
         password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD'] || use_default}"
+
+        # Reload and reconnect options
         reload_connections false
         reconnect_on_error true
         reload_on_failure true
         request_timeout 15s
-        time_key time
-        include_timestamp true
+
+        log_es_400_reason true
+
+        # avoid 7.x errors
         suppress_type_name true
+
+        # setting sniffer class
         sniffer_class_name Fluent::Plugin::ElasticsearchSimpleSniffer
+  
+        # Do not use logstash format
+        logstash_format false
+
+        # Setting index_name
+        index_name fluentd
+
+        # specifying time key
+        time_key time
+
+        # including @timestamp field
+        include_timestamp true
+
+        # ILM Settings - WITH ROLLOVER support
+        # https://github.com/uken/fluent-plugin-elasticsearch/blob/master/README.Troubleshooting.md#enable-index-lifecycle-management
+        # application_name "fluentd"
+        index_date_pattern ""
         enable_ilm true
+        ilm_policy_id fluentd-policy
+        ilm_policy {"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_size":"10gb","max_age":"7d"}}},"warm":{"min_age":"2d","actions":{"shrink":{"number_of_shards":1},"forcemerge":{"max_num_segments":1}}},"delete":{"min_age":"7d","actions":{"delete":{"delete_searchable_snapshot":true}}}}}}
+        ilm_policy_overwrite true
+        
+        # index template
+        use_legacy_template false
+        template_overwrite true
+        template_name fluentd
+        template_file "/etc/fluent/template/fluentd-es-template.json"
+        customize_template {"<<shard>>": "1","<<replica>>": "0"}
+
         <buffer>
-          flush_thread_count 8
-          flush_interval 5s
-          chunk_limit_size 2M
-          queue_limit_length 32
-          retry_max_interval 30
+          flush_thread_count "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_FLUSH_THREAD_COUNT'] || '8'}"
+          flush_interval "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_FLUSH_INTERVAL'] || '5s'}"
+          chunk_limit_size "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_CHUNK_LIMIT_SIZE'] || '2M'}"
+          queue_limit_length "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_QUEUE_LIMIT_LENGTH'] || '32'}"
+          retry_max_interval "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_RETRY_MAX_INTERVAL'] || '30'}"
           retry_forever true
         </buffer>
       </match>

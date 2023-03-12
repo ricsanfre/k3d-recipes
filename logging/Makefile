@@ -31,6 +31,7 @@ fluent-install-loki:
 	helm install fluent-bit fluent/fluent-bit -f fluentbit-values.yml -n logging
 
 fluent-install-es:
+	kubectl apply -f fluentd-template-cm.yml
 	helm install fluentd fluent/fluentd -f fluentd-values-es.yml -n logging
 	helm install fluent-bit fluent/fluent-bit -f fluentbit-values.yml -n logging
 
