@@ -131,15 +131,6 @@ fileConfigs:
           node_name ${ record.dig("kubernetes", "host")}
         </record>
       </filter>
-      ## Avoid ES rejection due to conflicting field types when using fluentbit merge_log
-      <filter kube.**>
-        @type record_transformer
-        enable_ruby true
-        remove_keys log_processed
-        <record>
-          json_message.${record["container"]} ${(record.has_key?('log_processed'))? record['log_processed'] : nil}
-        </record>
-      </filter>
       <match **>
         @type relabel
         @label @DISPATCH
@@ -181,7 +172,7 @@ fileConfigs:
         enable_ruby true
         remove_keys log_processed
         <record>
-          message_${record["container"]} ${(record.has_key?('log_processed'))? record['log_processed'] : nil}
+          data_${record["container"]} ${(record.has_key?('log_processed'))? record['log_processed'] : nil}
         </record>
       </filter>
       # Send received logs to elasticsearch

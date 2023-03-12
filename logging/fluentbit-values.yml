@@ -83,7 +83,7 @@ config:
         Merge_Log True
         Merge_Log_Trim False
         Merge_Log_Key log_processed
-        Keep_Log False
+        Keep_Log True
         K8S-Logging.Parser True
         K8S-Logging.Exclude True
         Labels True
@@ -93,6 +93,7 @@ config:
         Name modify
         Match kube.*
         Remove _p
+        Rename log message
 
     [FILTER]
         name lua
@@ -103,7 +104,6 @@ config:
     [FILTER]
         Name modify
         Match host.*
-        Rename message content
 
 luaScripts:
   adjust_ts.lua: |
