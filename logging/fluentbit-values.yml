@@ -80,14 +80,14 @@ config:
     [FILTER]
         Name kubernetes
         Match kube.*
-        Merge_Log True
-        Merge_Log_Trim False
+        Merge_Log On
+        Merge_Log_Trim Off
         Merge_Log_Key log_processed
-        Keep_Log True
-        K8S-Logging.Parser True
-        K8S-Logging.Exclude True
-        Labels True
-        Annotations False
+        Keep_Log On
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+        Labels On
+        Annotations Off
 
     [FILTER]
         Name modify

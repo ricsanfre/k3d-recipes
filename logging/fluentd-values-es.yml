@@ -128,7 +128,7 @@ fileConfigs:
           namespace ${ record.dig("kubernetes","namespace_name") }
           pod ${ record.dig("kubernetes", "pod_name") }
           container ${ record.dig("kubernetes", "container_name") }
-          node_name ${ record.dig("kubernetes", "host")}
+          host ${ record.dig("kubernetes", "host")}
         </record>
       </filter>
       <match **>
@@ -166,15 +166,32 @@ fileConfigs:
     </label>
   04_outputs.conf: |-
     <label @OUTPUT_ES>
-      ## Avoid ES rejection due to conflicting field types when using fluentbit merge_log
+      # Setup index name index based on namespace and container
       <filter kube.**>
         @type record_transformer
-        enable_ruby true
-        remove_keys log_processed
+        enable_ruby
         <record>
-          data_${record["container"]} ${(record.has_key?('log_processed'))? record['log_processed'] : nil}
+          index_app_name ${record['namespace'] + '.' + record['container']}
         </record>
       </filter>
+      <filter host.**>
+        @type record_transformer
+        enable_ruby
+        <record>
+          index_app_name "host"
+        </record>
+      </filter>
+
+      # Rewrite tag adding index_app_name prefix
+      # <match kube.**>
+      #   @type rewrite_tag_filter
+      #   <rule>
+      #     key index_app_name
+      #     pattern ^(.*)
+      #     tag kube.$1
+      #   </rule>
+      # </match>
+
       # Send received logs to elasticsearch
       <match **>
         @type elasticsearch
@@ -205,7 +222,7 @@ fileConfigs:
         logstash_format false
 
         # Setting index_name
-        index_name fluentd
+        index_name fluentd-${index_app_name}
 
         # specifying time key
         time_key time
@@ -215,7 +232,7 @@ fileConfigs:
 
         # ILM Settings - WITH ROLLOVER support
         # https://github.com/uken/fluent-plugin-elasticsearch/blob/master/README.Troubleshooting.md#enable-index-lifecycle-management
-        # application_name "fluentd"
+        # application_name ${index_app_name}
         index_date_pattern ""
         enable_ilm true
         ilm_policy_id fluentd-policy
@@ -225,11 +242,11 @@ fileConfigs:
         # index template
         use_legacy_template false
         template_overwrite true
-        template_name fluentd
+        template_name fluentd-${index_app_name}
         template_file "/etc/fluent/template/fluentd-es-template.json"
-        customize_template {"<<shard>>": "1","<<replica>>": "0"}
+        customize_template {"<<shard>>": "1","<<replica>>": "0", "<<TAG>>":"${index_app_name}"}
 
-        <buffer>
+        <buffer tag, index_app_name>
           flush_thread_count "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_FLUSH_THREAD_COUNT'] || '8'}"
           flush_interval "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_FLUSH_INTERVAL'] || '5s'}"
           chunk_limit_size "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_CHUNK_LIMIT_SIZE'] || '2M'}"

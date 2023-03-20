@@ -7,13 +7,13 @@ metadata:
 data:
   fluentd-es-template.json: |-
     {
-      "index_patterns": ["mock"],
+      "index_patterns": ["fluentd-<<TAG>>-*"],
       "template": {
         "settings": {
           "index": {
             "lifecycle": {
-              "name": "mock",
-              "rollover_alias": "mock"
+              "name": "fluentd-policy",
+              "rollover_alias": "fluentd-<<TAG>>"
             },
             "number_of_shards": "<<shard>>",
             "number_of_replicas": "<<replica>>"
