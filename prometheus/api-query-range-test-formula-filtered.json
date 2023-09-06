@@ -1,0 +1,106 @@
+// curl http://localhost:9090/api/v1/query_range --data-urlencode 'query=node_memory_MemTotal_bytes{instance="172.23.0.2:9100"}-node_memory_MemAvailable_bytes{instance="172.23.0.2:9100"}' --data-urlencode 'start=2023-09-06T12:34:39Z' --data-urlencode 'end=2023-09-06T12:39:39Z' --data-urlencode 'step=15s' | jq 
+{
+  "status": "success",
+  "data": {
+    "resultType": "matrix",
+    "result": [
+      {
+        "metric": {
+          "container": "node-exporter",
+          "endpoint": "http-metrics",
+          "instance": "172.23.0.2:9100",
+          "job": "node-exporter",
+          "namespace": "monitoring",
+          "pod": "kube-prometheus-stack-prometheus-node-exporter-zg7sq",
+          "service": "kube-prometheus-stack-prometheus-node-exporter"
+        },
+        "values": [
+          [
+            1694003679,
+            "6014943232"
+          ],
+          [
+            1694003694,
+            "6014943232"
+          ],
+          [
+            1694003709,
+            "6042165248"
+          ],
+          [
+            1694003724,
+            "6042165248"
+          ],
+          [
+            1694003739,
+            "5953126400"
+          ],
+          [
+            1694003754,
+            "5953126400"
+          ],
+          [
+            1694003769,
+            "6034116608"
+          ],
+          [
+            1694003784,
+            "6034116608"
+          ],
+          [
+            1694003799,
+            "5946556416"
+          ],
+          [
+            1694003814,
+            "5946556416"
+          ],
+          [
+            1694003829,
+            "5955956736"
+          ],
+          [
+            1694003844,
+            "5955956736"
+          ],
+          [
+            1694003859,
+            "5928132608"
+          ],
+          [
+            1694003874,
+            "5928132608"
+          ],
+          [
+            1694003889,
+            "5862014976"
+          ],
+          [
+            1694003904,
+            "5862014976"
+          ],
+          [
+            1694003919,
+            "5849387008"
+          ],
+          [
+            1694003934,
+            "5849387008"
+          ],
+          [
+            1694003949,
+            "5848133632"
+          ],
+          [
+            1694003964,
+            "5848133632"
+          ],
+          [
+            1694003979,
+            "5872717824"
+          ]
+        ]
+      }
+    ]
+  }
+}
