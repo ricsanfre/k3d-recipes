@@ -1,0 +1,24 @@
+global:
+  storageClass: local-path
+
+# Run in production mode behind NGINX proxy terminating TLS sessions
+# ref: https://www.keycloak.org/server/reverseproxy
+# edge proxy mode: Enables communication through HTTP between the proxy and Keycloak.
+# This mode is suitable for deployments with a highly secure internal network where the reverse proxy keeps a secure connection (HTTP over TLS) with clients while communicating with Keycloak using HTTP.
+production: true
+proxy: edge
+
+auth:
+  adminUser: admin
+
+ingress:
+  enabled: true
+  ingressClassName: "nginx"
+  pathType: Prefix
+  annotations:
+    cert-manager.io/cluster-issuer: ca-issuer
+  hostname: keycloak.local
+  tls:
+    - hosts:
+      - keycloak.local
+      secretName: keycloak-tls
