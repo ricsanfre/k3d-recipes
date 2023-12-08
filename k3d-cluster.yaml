@@ -3,9 +3,13 @@ kind: Simple
 name: mycluster
 servers: 1
 agents: 2
-# Export traefik port
+# Export traefik/nginx port
+# Available at http://localhost and https://localhost
 ports:
-  - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
+  - port: 80:80 # same as `--port '80:80@loadbalancer'`
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
     nodeFilters:
       - loadbalancer
 options:
