@@ -8,6 +8,7 @@ helm-setup:
 	helm repo add bitnami https://charts.bitnami.com/bitnami
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo add jetstack https://charts.jetstack.io
+	helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
 	helm repo update
 
 cert-manager-install:
@@ -26,3 +27,11 @@ keycloak-portforwarding:
 
 get-keycloak-admin-password:
 	kubectl get secret keycloak -o jsonpath='{.data.admin-password}' -n keycloak | base64 -d && echo
+
+proxy-oauth-install:
+	kubectl create namespace oauth2-proxy
+	helm install oauth2-proxy oauth2-proxy/oauth2-proxy -f oauth2-proxy-values.yml --namespace oauth2-proxy
+
+testing-app:
+	kubectl create namespace nginx-test
+	kubectl apply -f test-app.yml

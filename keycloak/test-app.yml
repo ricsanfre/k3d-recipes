@@ -1,0 +1,98 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx-test
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html-files
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: html-files
+          configMap:
+            name: html-files-configmap
+            items:
+              - key: index.html
+                path: index.html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: nginx-test
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: nginx
+  type: ClusterIP
+---
+apiVersion: v1
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Lets meet the CptTeam</title>
+    </head>
+    <body>
+    <h1>May the Force be with you!</h1>
+    <p>Master Yoda greets you padawans!</p>
+    </body>
+    </html>
+kind: ConfigMap
+metadata:
+  name: html-files-configmap
+  namespace: nginx-test
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/auth-signin: https://proxy-auth.local/oauth2/start?rd=https://test.local$request_uri
+    nginx.ingress.kubernetes.io/auth-url: https://proxy-auth.local/oauth2/auth
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      auth_request_set $name_upstream_1 $upstream_cookie__oauth2_proxy_1;
+
+      access_by_lua_block {
+        if ngx.var.name_upstream_1 ~= "" then
+          ngx.header["Set-Cookie"] = "_oauth2_proxy_1=" .. ngx.var.name_upstream_1 .. ngx.var.auth_cookie:match("(; .*)")
+        end
+      }
+  name: nginx-ingress
+  namespace: nginx-test
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: test.local
+      http:
+        paths:
+          - backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+            path: /index.html
+            pathType: Prefix

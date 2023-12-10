@@ -1,6 +1,7 @@
-apiVersion: k3d.io/v1alpha3
+apiVersion: k3d.io/v1alpha5
 kind: Simple
-name: mycluster
+metadata:
+  name: mycluster
 servers: 1
 agents: 2
 # Export traefik/nginx port
@@ -12,7 +13,11 @@ ports:
   - port: 443:443
     nodeFilters:
       - loadbalancer
-
+hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS
+  - ip: 172.17.0.1
+    hostnames:
+      - keycloak.local
+      - proxy-auth.local
 options:
   k3s:
     extraArgs:
