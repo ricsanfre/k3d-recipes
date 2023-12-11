@@ -16,8 +16,8 @@ ports:
 hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS
   - ip: 172.17.0.1
     hostnames:
-      - keycloak.local
-      - proxy-auth.local
+      - keycloak.mycluster.local
+      - proxy-auth.mycluster.local
 options:
   k3s:
     extraArgs:

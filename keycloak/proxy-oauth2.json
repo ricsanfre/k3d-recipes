@@ -1,0 +1,70 @@
+{
+  "clientId": "proxy-oauth2",
+  "name": "Proxy OAuth 2.0",
+  "description": "Proxy OAuth 2.0",
+  "rootUrl": "",
+  "adminUrl": "",
+  "baseUrl": "",
+  "surrogateAuthRequired": false,
+  "enabled": true,
+  "alwaysDisplayInConsole": true,
+  "clientAuthenticatorType": "client-secret",
+  "secret": "Au03YXpH2wVGexoEtkrNoYCPQDEEFATr",
+  "redirectUris": [
+    "https://proxy-auth.mycluster.local/oauth2/callback"
+  ],
+  "webOrigins": [
+    "https://proxy-auth.mycluster.local"
+  ],
+  "notBefore": 0,
+  "bearerOnly": false,
+  "consentRequired": false,
+  "standardFlowEnabled": true,
+  "implicitFlowEnabled": false,
+  "directAccessGrantsEnabled": false,
+  "serviceAccountsEnabled": false,
+  "publicClient": false,
+  "frontchannelLogout": true,
+  "protocol": "openid-connect",
+  "attributes": {
+    "oidc.ciba.grant.enabled": "false",
+    "oauth2.device.authorization.grant.enabled": "false",
+    "client.secret.creation.time": "1702229690",
+    "backchannel.logout.session.required": "true",
+    "backchannel.logout.revoke.offline.tokens": "false"
+  },
+  "authenticationFlowBindingOverrides": {},
+  "fullScopeAllowed": true,
+  "nodeReRegistrationTimeout": -1,
+  "protocolMappers": [
+    {
+      "name": "aud-mapper-proxy-oauth2",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-audience-mapper",
+      "consentRequired": false,
+      "config": {
+        "included.client.audience": "proxy-oauth2",
+        "id.token.claim": "true",
+        "access.token.claim": "true"
+      }
+    }
+  ],
+  "defaultClientScopes": [
+    "web-origins",
+    "acr",
+    "roles",
+    "profile",
+    "email"
+  ],
+  "optionalClientScopes": [
+    "address",
+    "phone",
+    "offline_access",
+    "microprofile-jwt"
+  ],
+  "access": {
+    "view": true,
+    "configure": true,
+    "manage": true
+  }
+}

@@ -2,10 +2,10 @@
 DATE_NOW=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" --date 'now')
 DATE_5MIN_AGO=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" --date 'now - 5 minutes')
 PROM_SINGLE_METRIC=node_memory_MemTotal_bytes{instance="172.23.0.2:9100"}
-PROM_FORMULA=node_memory_MemTotal_bytes-node_memory_MemAvailable_bytes
+# PROM_FORMULA=node_memory_MemTotal_bytes-node_memory_MemAvailable_bytes
 # PROM_FORMULA=(1 - (node_memory_MemAvailable_bytes{instance="172.23.0.2:9100"} / node_memory_MemAvailable_bytes{instance="172.23.0.2:9100"})) * 100
 # PROM_FORMULA=count(node_cpu_seconds_total) by (instance, mode)
-
+PROM_FORMULA=sum by (instance,cpu) (node_cpu_seconds_total)
 create-k3d:
 	k3d cluster create mycluster -c ../k3d-cluster.yaml
 

@@ -21,18 +21,18 @@ config:
     # Provider config
     provider="keycloak-oidc"
     provider_display_name="Keycloak"
-    redirect_url="https://proxy-auth.local/oauth2/callback"
-    oidc_issuer_url="https://keycloak.local/realms/mycluster"
+    redirect_url="https://proxy-auth.mycluster.local/oauth2/callback"
+    oidc_issuer_url="https://keycloak.mycluster.local/realms/mycluster"
     code_challenge_method="S256"
     ssl_insecure_skip_verify=true
     # Upstream config
     http_address="0.0.0.0:4180"
     upstreams="file:///dev/null"
     email_domains=["*"]
-    cookie_domains=["keycloak.local", "proxy-auth.local"]
+    cookie_domains=["mycluster.local"]
     cookie_secure=false
     scope="openid"
-    whitelist_domains=["keycloak.local", "proxy-auth.local", "test.local"]
+    whitelist_domains=[".mycluster.local"]
     insecure_oidc_allow_unverified_email="true"
 # Configuring redis storage
 sessionStorage:
@@ -53,8 +53,8 @@ ingress:
     cert-manager.io/cluster-issuer: ca-issuer
     nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
   hosts:
-   - proxy-auth.local
+   - proxy-auth.mycluster.local
   tls:
     - hosts:
-        - proxy-auth.local
+        - proxy-auth.mycluster.local
       secretName: proxy-auth-tls
