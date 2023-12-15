@@ -20,6 +20,7 @@ nginx-install:
 
 keycloak-install:
 	kubectl create namespace keycloak
+	kubectl apply -f keycloak-realm-configmap.yml
 	helm install keycloak bitnami/keycloak -f keycloak-values.yml --namespace keycloak
 
 keycloak-portforwarding:
