@@ -9,6 +9,7 @@ helm-setup:
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo update
 
 cert-manager-install:
@@ -32,6 +33,11 @@ get-keycloak-admin-password:
 proxy-oauth-install:
 	kubectl create namespace oauth2-proxy
 	helm install oauth2-proxy oauth2-proxy/oauth2-proxy -f oauth2-proxy-values.yml --namespace oauth2-proxy
+
+prometheus-grafana-install:
+	kubectl create namespace monitoring
+	helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yml
+	kubectl apply -f ingress.yaml
 
 testing-app:
 	kubectl create namespace nginx-test

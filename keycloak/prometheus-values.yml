@@ -1,0 +1,63 @@
+alertmanager:
+  alertmanagerSpec:
+    externalUrl: http://monitoring.mycluster.local/alertmanager/
+    routePrefix: /
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+prometheus:
+  prometheusSpec:
+    externalUrl: http://monitoring.mycluster.local/prometheus/
+    routePrefix: / 
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+grafana:
+  # Admin user password
+  adminPassword: "s1cret0"
+  grafana.ini:
+    server:
+      domain: monitoring.mycluster.local
+      root_url: "https://%(domain)s/grafana/"
+      serve_from_sub_path: false
+    auth.generic_oauth:
+      enabled: true
+      name: Keycloak-OAuth
+      allow_sign_up: true
+      client_id: grafana
+      client_secret: YoR2whuGbxwOWbHqLvN5qTd99YbmxWZH
+      scopes: openid email profile offline_access roles
+      email_attribute_path: email
+      login_attribute_path: username
+      name_attribute_path: full_name
+      auth_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/auth
+      token_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/token
+      api_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/userinfo
+      role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
+      tls_skip_verify_insecure: true
+prometheusOperator:
+  # Disable kubelet service creation
+  kubeletService:
+    enabled: false
+kubelet:
+  enabled: false
+kubeApiServer:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false

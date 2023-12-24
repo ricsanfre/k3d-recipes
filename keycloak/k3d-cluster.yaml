@@ -18,6 +18,7 @@ hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the no
     hostnames:
       - keycloak.mycluster.local
       - proxy-auth.mycluster.local
+      - monitoring.mycluster.local
 options:
   k3s:
     extraArgs:

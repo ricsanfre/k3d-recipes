@@ -60,6 +60,51 @@ data:
             "configure": true,
             "manage": true
           }
+        },
+        {
+          "clientId": "grafana",
+          "name": "Grafana",
+          "description": "Grafana",
+          "rootUrl": "https://monitoring.mycluster.local/grafana",
+          "adminUrl": "https://monitoring.mycluster.local/grafana",
+          "baseUrl": "https://monitoring.mycluster.local/grafana",
+          "surrogateAuthRequired": false,
+          "enabled": true,
+          "alwaysDisplayInConsole": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "YoR2whuGbxwOWbHqLvN5qTd99YbmxWZH",
+          "redirectUris": [
+            "https://monitoring.mycluster.local/grafana/login/generic_oauth"
+          ],
+          "webOrigins": [
+            "https://monitoring.mycluster.local/grafana"
+          ],
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": true,
+          "serviceAccountsEnabled": false,
+          "publicClient": false,
+          "protocol": "openid-connect",
+          "fullScopeAllowed": true,
+          "frontchannelLogout": true,
+          "defaultClientScopes": [
+            "web-origins",
+            "acr",
+            "profile",
+            "roles",
+            "email"
+          ],
+          "optionalClientScopes": [
+            "address",
+            "phone",
+            "offline_access",
+            "microprofile-jwt"
+          ],
+          "access": {
+            "view": true,
+            "configure": true,
+            "manage": true
+          }
         }
       ],
       "roles": {
@@ -79,28 +124,18 @@ data:
           "username": "ricsanfre",
           "email": "perro@mail.com",
           "enabled": true,
-          "emailVerified": false,
+          "emailVerified": true,
           "credentials": [
             {
+              "temporary": false,
               "type": "password",
               "value": "password"
             }
           ],
           "realmRoles": [
-            "admin"
-          ],
-          "clientRoles": {
-            "account": [
-              "manage-account",
-              "view-profile"
-            ],
-            "realm-management": [
-              "manage-users",
-              "view-users",
-              "query-users",
-              "create-client"
-            ]
-          }
+            "admin",
+            "default-roles-mycluster"
+          ]
         }
       ]
     }
