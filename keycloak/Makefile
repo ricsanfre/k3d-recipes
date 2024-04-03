@@ -10,6 +10,7 @@ helm-setup:
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo add elastic https://helm.elastic.co
 	helm repo update
 
 cert-manager-install:
@@ -38,6 +39,16 @@ prometheus-grafana-install:
 	kubectl create namespace monitoring
 	helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yml
 	kubectl apply -f ingress.yaml
+
+es-install:
+	kubectl create namespace logging
+	kubectl apply -f es-keycloak-secret.yml
+	helm install elastic-operator elastic/eck-operator --namespace logging
+	kubectl apply -f elasticsearch.yml
+	kubectl apply -f kibana-ingress.yaml
+get-es-passwd:
+	kubectl get secret efk-es-elastic-user -o jsonpath='{.data.elastic}' -n logging | base64 -d;echo
+
 
 testing-app:
 	kubectl create namespace nginx-test
