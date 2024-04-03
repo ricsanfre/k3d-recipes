@@ -1,3 +1,9 @@
+create-k3d:
+	k3d cluster create mycluster -c k3d-cluster.yaml
+
+delete-k3d:
+	k3d cluster delete mycluster
+
 linkerd-certs:
 	step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure
 	step certificate create identity.linkerd.cluster.local issuer.crt issuer.key --profile intermediate-ca --not-after 8760h --no-password --insecure --ca ca.crt --ca-key ca.key
@@ -7,6 +13,7 @@ helm-setup:
 	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo add traefik https://helm.traefik.io/traefik
 	helm repo add fluent https://fluent.github.io/helm-charts
+	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo update
 	
 linkerd-install:
@@ -32,6 +39,12 @@ traefik-install:
 	kubectl create namespace traefik
 	helm install traefik traefik/traefik --create-namespace -n traefik -f traefik-values.yml
 
+nginx-install:
+	# install traefik exporting traces to tempo
+	kubectl create namespace nginx
+	helm install ingress-nginx ingress-nginx/ingress-nginx --create-namespace -n nginx -f nginx-values.yml
+
+
 grafana-install:
 	kubectl create namespace grafana
 	helm install grafana grafana/grafana --namespace grafana -f grafana-values.yml
@@ -43,3 +56,6 @@ deploy-emojivoto:
 	linkerd inject https://run.linkerd.io/emojivoto.yml | kubectl apply -f -
 	kubectl -n emojivoto set env --all deploy OC_AGENT_HOST=tempo-distributor.tempo:55678
 	kubectl apply -f traefik-ingress.yml
+
+grafana-portforward:
+	kubectl port-forward svc/grafana 3000:80 -n grafana
