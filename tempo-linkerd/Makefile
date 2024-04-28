@@ -55,7 +55,7 @@ linkerd-jaeger:
 deploy-emojivoto:
 	linkerd inject https://run.linkerd.io/emojivoto.yml | kubectl apply -f -
 	kubectl -n emojivoto set env --all deploy OC_AGENT_HOST=tempo-distributor.tempo:55678
-	kubectl apply -f traefik-ingress.yml
+	kubectl apply -f nginx-ingress.yml
 
 grafana-portforward:
 	kubectl port-forward svc/grafana 3000:80 -n grafana
