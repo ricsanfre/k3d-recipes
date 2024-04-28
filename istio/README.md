@@ -64,6 +64,11 @@ export PATH=$HOME/.istioctl/bin:$PATH
   helm install istio-ingress istio/gateway -n istio-ingress --wait
   ```
 
+## Install Kiali
+
+https://www.lisenet.com/2023/kiali-does-not-see-istio-ingressgateway-installed-in-separate-kubernetes-namespace/
+
+
 ## Deploy sample application
 
 [Book info sample application](https://istio.io/latest/docs/examples/bookinfo/) can be deployed to test installation
@@ -97,10 +102,13 @@ export PATH=$HOME/.istioctl/bin:$PATH
 
  - Validate configuration
 
-   ``
+   ```shell
+   ioctl validate
+   ```
 
 
 ## References
 
 - Install istio using Helm chart: https://istio.io/latest/docs/setup/install/helm/ 
 - Istio getting started: https://istio.io/latest/docs/setup/getting-started/
+- Kiali: https://kiali.io/

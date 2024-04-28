@@ -7,6 +7,7 @@ delete-k3d:
 
 helm-setup:
 	helm repo add istio https://istio-release.storage.googleapis.com/charts
+	helm repo add kiali https://kiali.org/helm-charts
 	helm repo update
 	
 istio-control-install:
@@ -17,6 +18,12 @@ istio-control-install:
 istio-gateway-install:
 	kubectl create namespace istio-ingress
 	helm install istio-ingress istio/gateway -n istio-ingress
+
+kiali-install:
+	helm install kiali-server kiali/kiali-server --namespace istio-system -f kiali-values.yaml
+
+kiali-port-forward:
+	kubectl port-forward svc/kiali 20001:20001 -n istio-system
 
 deploy-sample-app:
 	kubectl label namespace default istio-injection=enabled

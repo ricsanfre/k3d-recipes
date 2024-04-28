@@ -1,0 +1,14 @@
+auth:
+  strategy: "anonymous"
+external_services:
+  istio:
+    root_namespace: istio-system
+    component_status:
+      enabled: true
+      components:
+      - app_label: istiod
+        is_core: true
+      - app_label: istio-ingress
+        is_core: true
+        is_proxy: true
+        namespace: istio-ingress
