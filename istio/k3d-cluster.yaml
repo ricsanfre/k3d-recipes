@@ -1,0 +1,32 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: mycluster
+servers: 1
+agents: 2
+# Export traefik/nginx port
+# Available at http://localhost and https://localhost
+ports:
+  - port: 80:80 # same as `--port '80:80@loadbalancer'`
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+options:
+  k3s:
+    extraArgs:
+      - arg: --kube-proxy-arg=metrics-bind-address=0.0.0.0
+        nodeFilters:
+          - server:*
+          - agent:*
+      - arg: --kube-controller-manager-arg=bind-address=0.0.0.0
+        nodeFilters:
+          - server:*
+      - arg: --kube-scheduler-arg=bind-address=0.0.0.0
+        nodeFilters:
+          - server:*
+      # Disable traefik
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*
