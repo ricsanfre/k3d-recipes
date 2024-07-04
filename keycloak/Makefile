@@ -11,19 +11,32 @@ helm-setup:
 	helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add elastic https://helm.elastic.co
+	helm repo add cnpg https://cloudnative-pg.github.io/charts
 	helm repo update
 
 cert-manager-install:
 	helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true
 	kubectl apply -f cluster-cert-issuer.yml
+
 nginx-install:
 	kubectl create namespace nginx
 	helm install ingress-nginx ingress-nginx/ingress-nginx -f nginx-values.yml --namespace nginx
+
+cnpg-install:
+	kubectl create namespace databases
+	helm install cloudnative-pg cnpg/cloudnative-pg -f cloudnative-pg-values.yml --namespace databases 
 
 keycloak-install:
 	kubectl create namespace keycloak
 	kubectl apply -f keycloak-realm-configmap.yml
 	helm install keycloak bitnami/keycloak -f keycloak-values.yml --namespace keycloak
+
+keycloak-externaldb-install:
+	kubectl create namespace keycloak
+	kubectl apply -f keycloak-db-secret.yaml
+	kubectl apply -f keycloak-db.yaml
+	kubectl apply -f keycloak-realm-configmap.yml
+	helm install keycloak bitnami/keycloak -f keycloak-externaldatabase-values.yml --namespace keycloak
 
 keycloak-portforwarding:
 	kubectl port-forward svc/keycloak 8081:80 -n keycloak
