@@ -24,14 +24,14 @@ spec:
             order: 2
             rp.client_id: kibana
             rp.response_type: code
-            rp.redirect_uri: https://kibana.mycluster.local/api/security/oidc/callback
-            op.issuer: https://keycloak.mycluster.local/realms/mycluster
-            op.authorization_endpoint: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/auth
-            op.token_endpoint: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/token
-            op.jwkset_path: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/certs
-            op.userinfo_endpoint: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/userinfo
-            op.endsession_endpoint: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/logout
-            rp.post_logout_redirect_uri: https://kibana.mycluster.local/logged_out
+            rp.redirect_uri: https://kibana.local.test/api/security/oidc/callback
+            op.issuer: https://keycloak.local.test/realms/mycluster
+            op.authorization_endpoint: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/auth
+            op.token_endpoint: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/token
+            op.jwkset_path: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/certs
+            op.userinfo_endpoint: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/userinfo
+            op.endsession_endpoint: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/logout
+            rp.post_logout_redirect_uri: https://kibana.local.test/logged_out
             claims.principal: name
             ssl.verification_mode: none
     volumeClaimTemplates: 

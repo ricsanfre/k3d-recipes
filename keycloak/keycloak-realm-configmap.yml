@@ -21,10 +21,10 @@ data:
           "clientAuthenticatorType": "client-secret",
           "secret": "Au03YXpH2wVGexoEtkrNoYCPQDEEFATr",
           "redirectUris": [
-            "https://proxy-auth.mycluster.local/oauth2/callback"
+            "https://proxy-auth.localhost/oauth2/callback"
           ],
           "webOrigins": [
-            "https://proxy-auth.mycluster.local"
+            "https://proxy-auth.localhost"
           ],
           "standardFlowEnabled": true,
           "directAccessGrantsEnabled": false,
@@ -65,19 +65,19 @@ data:
           "clientId": "grafana",
           "name": "Grafana",
           "description": "Grafana",
-          "rootUrl": "https://monitoring.mycluster.local/grafana",
-          "adminUrl": "https://monitoring.mycluster.local/grafana",
-          "baseUrl": "https://monitoring.mycluster.local/grafana",
+          "rootUrl": "https://monitoring.localhost/grafana",
+          "adminUrl": "https://monitoring.localhost/grafana",
+          "baseUrl": "https://monitoring.localhost/grafana",
           "surrogateAuthRequired": false,
           "enabled": true,
           "alwaysDisplayInConsole": true,
           "clientAuthenticatorType": "client-secret",
           "secret": "YoR2whuGbxwOWbHqLvN5qTd99YbmxWZH",
           "redirectUris": [
-            "https://monitoring.mycluster.local/grafana/login/generic_oauth"
+            "https://monitoring.localhost/grafana/login/generic_oauth"
           ],
           "webOrigins": [
-            "https://monitoring.mycluster.local/grafana"
+            "https://monitoring.localhost/grafana"
           ],
           "standardFlowEnabled": true,
           "implicitFlowEnabled": false,

@@ -12,10 +12,11 @@ helm-setup:
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add elastic https://helm.elastic.co
 	helm repo add cnpg https://cloudnative-pg.github.io/charts
+	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo update
 
 cert-manager-install:
-	helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true
+	helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set crds.enabled=true
 	kubectl apply -f cluster-cert-issuer.yml
 
 nginx-install:
@@ -26,17 +27,32 @@ cnpg-install:
 	kubectl create namespace databases
 	helm install cloudnative-pg cnpg/cloudnative-pg -f cloudnative-pg-values.yml --namespace databases 
 
-keycloak-install:
+keycloak-bitnami-install:
 	kubectl create namespace keycloak
 	kubectl apply -f keycloak-realm-configmap.yml
 	helm install keycloak bitnami/keycloak -f keycloak-values.yml --namespace keycloak
 
-keycloak-externaldb-install:
+keycloak-bitnami-externaldb-install:
 	kubectl create namespace keycloak
 	kubectl apply -f keycloak-db-secret.yaml
 	kubectl apply -f keycloak-db.yaml
 	kubectl apply -f keycloak-realm-configmap.yml
 	helm install keycloak bitnami/keycloak -f keycloak-externaldatabase-values.yml --namespace keycloak
+
+keycloak-operator-install:
+	kubectl kustomize keycloak-operator/overlays/prod | kubectl apply -f -
+
+keycloak-externaldb-install:
+	kubectl apply -f keycloak-db-secret.yaml
+	kubectl apply -f keycloak-db.yaml
+
+keycloak-instance-install:
+	kubectl apply -f keycloak-operator/keycloak-secret.yaml
+	kubectl apply -f keycloak-operator/keycloak.yaml
+
+keycloak-configure:
+	kubectl apply -f keycloak-operator/keycloak-ingress.yaml
+	kubectl apply -f keycloak-operator/keycloak-realm.yaml
 
 keycloak-portforwarding:
 	kubectl port-forward svc/keycloak 8081:80 -n keycloak
@@ -48,9 +64,14 @@ proxy-oauth-install:
 	kubectl create namespace oauth2-proxy
 	helm install oauth2-proxy oauth2-proxy/oauth2-proxy -f oauth2-proxy-values.yml --namespace oauth2-proxy
 
-prometheus-grafana-install:
-	kubectl create namespace monitoring
-	helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n monitoring -f prometheus-values.yml
+prometheus-install:
+	kubectl create namespace kube-prom-stack
+	helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n kube-prom-stack -f prometheus-values.yml
+
+grafana-install:
+	kubectl create namespace grafana
+	kubectl apply -f grafana-env.yaml
+	helm -f grafana-values.yaml install grafana grafana/grafana --namespace grafana
 	kubectl apply -f ingress.yaml
 
 es-install:

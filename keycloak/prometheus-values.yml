@@ -1,6 +1,6 @@
 alertmanager:
   alertmanagerSpec:
-    externalUrl: http://monitoring.mycluster.local/alertmanager/
+    externalUrl: http://monitoring.local.test/alertmanager/
     routePrefix: /
     storage:
       volumeClaimTemplate:
@@ -12,7 +12,7 @@ alertmanager:
               storage: 5Gi
 prometheus:
   prometheusSpec:
-    externalUrl: http://monitoring.mycluster.local/prometheus/
+    externalUrl: http://monitoring.local.test/prometheus/
     routePrefix: / 
     storageSpec:
       volumeClaimTemplate:
@@ -22,32 +22,24 @@ prometheus:
           resources:
             requests:
               storage: 5Gi
+
+    # Removing default filter Prometheus selectors
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+
+    
+# Disabling Grafana
 grafana:
-  # Admin user password
-  adminPassword: "s1cret0"
-  grafana.ini:
-    server:
-      domain: monitoring.mycluster.local
-      root_url: "https://%(domain)s/grafana/"
-      serve_from_sub_path: false
-    auth.generic_oauth:
-      enabled: true
-      name: Keycloak-OAuth
-      allow_sign_up: true
-      client_id: grafana
-      client_secret: YoR2whuGbxwOWbHqLvN5qTd99YbmxWZH
-      scopes: openid email profile offline_access roles
-      email_attribute_path: email
-      login_attribute_path: username
-      name_attribute_path: full_name
-      auth_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/auth
-      token_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/token
-      api_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/userinfo
-      role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
-      signout_redirect_url: https://keycloak.mycluster.local/realms/mycluster/protocol/openid-connect/logout?client_id=grafana&post_logout_redirect_uri=https%3A%2F%2Fmonitoring.mycluster.local%2Fgrafana%2Flogin%2Fgeneric_oauth
-      tls_skip_verify_insecure: true
-    log.file:
-      level: debug
+  enabled: false
+  # Enable deployment of kube-prometheus-stack grafana dashboards
+  forceDeployDashboards: true
+  # Adding grafana folder annotation
+  sidecar:
+    dashboards:
+      annotations:
+        grafana_folder: Kubernetes
 prometheusOperator:
   # Disable kubelet service creation
   kubeletService:

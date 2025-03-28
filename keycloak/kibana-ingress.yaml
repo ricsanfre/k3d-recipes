@@ -8,15 +8,15 @@ metadata:
   annotations:
     # Enable cert-manager to create automatically the SSL certificate and store in Secret
     cert-manager.io/cluster-issuer: ca-issuer
-    cert-manager.io/common-name: kibana.mycluster.local
+    cert-manager.io/common-name: kibana.local.test
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - kibana.mycluster.local
+        - kibana.local.test
       secretName: kibana-tls
   rules:
-    - host: kibana.mycluster.local
+    - host: kibana.local.test
       http:
         paths:
           - path: /

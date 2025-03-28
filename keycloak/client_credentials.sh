@@ -6,7 +6,7 @@
 
 init()
 {
-KEYCLOAK_URL="https://keycloak.mycluster.local"
+KEYCLOAK_URL="https://keycloak.local.test"
 REDIRECT_URL="http://localhost:8080"
 USERNAME="user1"
 SCOPES="openid testapp-scope"

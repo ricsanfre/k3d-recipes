@@ -20,10 +20,10 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "Au03YXpH2wVGexoEtkrNoYCPQDEEFATr",
       "redirectUris": [
-        "https://proxy-auth.mycluster.local/oauth2/callback"
+        "https://proxy-auth.local.test/oauth2/callback"
       ],
       "webOrigins": [
-        "https://proxy-auth.mycluster.local"
+        "https://proxy-auth.local.test"
       ],
       "notBefore": 0,
       "bearerOnly": false,
