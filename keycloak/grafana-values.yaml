@@ -20,11 +20,31 @@ grafana.ini:
     auth_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/auth
     token_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/token
     api_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/userinfo
-    role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
+    role_attribute_path: contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || (contains(resource_access.grafana.roles[*], 'viewer') && 'Viewer')
     signout_redirect_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/logout?client_id=grafana&post_logout_redirect_uri=https%3A%2F%2Fmonitoring.localhost%2Fgrafana%2Flogin%2Fgeneric_oauth
     tls_skip_verify_insecure: true
   log.file:
     level: debug
+
+
+# Enable provisioning of dashboards and datasources
+sidecar:
+  dashboards:
+    enabled: true
+    # Search in all namespaces for configMaps containing label `grafana_dashboard`
+    searchNamespace: ALL
+    label: grafana_dashboard
+    # set folder name through annotation `grafana_folder`
+    folderAnnotation: grafana_folder
+    provider:
+      disableDelete: true
+      foldersFromFilesStructure: true
+  datasources:
+    enabled: true
+    # Search in all namespaces for configMaps
+    searchNamespace: ALL
+    label: grafana_datasource
+    labelValue: "1"
 
 # Ingress configuration
 ingress:

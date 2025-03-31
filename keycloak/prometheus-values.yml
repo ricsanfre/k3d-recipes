@@ -33,6 +33,8 @@ prometheus:
 # Disabling Grafana
 grafana:
   enabled: false
+  # Create datasource configmap even if grafana deployment has been disabled
+  forceDeployDatasources: true
   # Enable deployment of kube-prometheus-stack grafana dashboards
   forceDeployDashboards: true
   # Adding grafana folder annotation
