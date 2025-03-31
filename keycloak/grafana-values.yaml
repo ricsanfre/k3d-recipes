@@ -4,24 +4,43 @@ adminPassword: "s1cret0"
 envFromSecret: grafana-env-secret
 grafana.ini:
   server:
-    domain: monitoring.localhost
+    domain: monitoring.local.test
     root_url: "https://%(domain)s/grafana/"
-    serve_from_sub_path: false
+    serve_from_sub_path: true
   auth.generic_oauth:
     enabled: true
     name: Keycloak-OAuth
     allow_sign_up: true
     client_id: grafana
-    # client_secret: YoR2whuGbxwOWbHqLvN5qTd99YbmxWZH
+    # client_secret: Has to be provided by env variable.
     scopes: openid email profile offline_access roles
     email_attribute_path: email
     login_attribute_path: username
     name_attribute_path: full_name
-    auth_url: https://keycloak.localhost/realms/mycluster/protocol/openid-connect/auth
-    token_url: https://keycloak.localhost/realms/mycluster/protocol/openid-connect/token
-    api_url: https://keycloak.localhost/realms/mycluster/protocol/openid-connect/userinfo
+    auth_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/auth
+    token_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/token
+    api_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/userinfo
     role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
-    signout_redirect_url: https://keycloak.localhost/realms/mycluster/protocol/openid-connect/logout?client_id=grafana&post_logout_redirect_uri=https%3A%2F%2Fmonitoring.localhost%2Fgrafana%2Flogin%2Fgeneric_oauth
+    signout_redirect_url: https://keycloak.local.test/realms/mycluster/protocol/openid-connect/logout?client_id=grafana&post_logout_redirect_uri=https%3A%2F%2Fmonitoring.localhost%2Fgrafana%2Flogin%2Fgeneric_oauth
     tls_skip_verify_insecure: true
   log.file:
     level: debug
+
+# Ingress configuration
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  # Values can be templated
+  annotations:
+    # Enable cert-manager to create automatically the SSL certificate and store in Secret
+    cert-manager.io/cluster-issuer: ca-issuer
+    cert-manager.io/common-name: monitoring.local.test
+  path: /grafana
+  pathType: Prefix
+  hosts:
+    - monitoring.local.test
+  tls:
+    - hosts:
+      - monitoring.local.test
+      secretName: monitoring-tls
+

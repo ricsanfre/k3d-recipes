@@ -52,6 +52,7 @@ keycloak-instance-install:
 
 keycloak-configure:
 	kubectl apply -f keycloak-operator/keycloak-ingress.yaml
+	kubectl apply -f keycloak-operator/keycloak-realm-env.yaml
 	kubectl apply -f keycloak-operator/keycloak-realm.yaml
 
 keycloak-portforwarding:
@@ -67,12 +68,12 @@ proxy-oauth-install:
 prometheus-install:
 	kubectl create namespace kube-prom-stack
 	helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n kube-prom-stack -f prometheus-values.yml
+	kubectl apply -f ingress-prometheus.yaml
 
 grafana-install:
 	kubectl create namespace grafana
 	kubectl apply -f grafana-env.yaml
 	helm -f grafana-values.yaml install grafana grafana/grafana --namespace grafana
-	kubectl apply -f ingress.yaml
 
 es-install:
 	kubectl create namespace logging

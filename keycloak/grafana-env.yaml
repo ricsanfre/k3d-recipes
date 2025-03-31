@@ -4,5 +4,5 @@ metadata:
   name: grafana-env-secret
   namespace: grafana
 type: Opaque
-data:
-  GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: WW9SMndodUdieHdPV2JIcUx2TjVxVGQ5OVlibXhXWkgK
+stringData:
+  GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: supers1cret0
