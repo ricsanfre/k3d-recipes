@@ -27,7 +27,11 @@ spec:
   http:
     httpEnabled: true
   hostname:
-    hostname: keycloak.local.test
+    # Setting hostname
+    hostname: https://keycloak.local.test
+    strict: true
+    # Enabling back channel
+    backchannelDynamic: true
   proxy:
     headers: xforwarded # double check your reverse proxy sets and overwrites the X-Forwarded-* headers
   # Do not create ingress

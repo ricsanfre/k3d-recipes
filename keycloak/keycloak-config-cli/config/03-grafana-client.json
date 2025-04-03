@@ -1,0 +1,102 @@
+{
+    "enabled": true,
+    "realm": "mycluster",
+    "clients": [
+      {
+        "clientId": "$(env:GRAFANA_OAUTH_CLIENT_ID)",
+        "name": "Grafana",
+        "description": "Grafana",
+        "rootUrl": "https://monitoring.$(env:CLUSTER_DOMAIN)/grafana",
+        "adminUrl": "https://monitoring.$(env:CLUSTER_DOMAIN)/grafana",
+        "baseUrl": "https://monitoring.$(env:CLUSTER_DOMAIN)/grafana",
+        "surrogateAuthRequired": false,
+        "enabled": true,
+        "alwaysDisplayInConsole": true,
+        "clientAuthenticatorType": "client-secret",
+        "secret": "$(env:GRAFANA_OAUTH_CLIENT_SECRET)",
+        "redirectUris": [
+          "https://monitoring.$(env:CLUSTER_DOMAIN)/grafana/login/generic_oauth"
+        ],
+        "webOrigins": [
+          "https://monitoring.$(env:CLUSTER_DOMAIN)/grafana"
+        ],
+        "standardFlowEnabled": true,
+        "implicitFlowEnabled": false,
+        "directAccessGrantsEnabled": true,
+        "serviceAccountsEnabled": false,
+        "publicClient": false,
+        "protocol": "openid-connect",
+        "fullScopeAllowed": true,
+        "frontchannelLogout": true,
+        "defaultClientScopes": [
+          "web-origins",
+          "acr",
+          "profile",
+          "roles",
+          "roles-id-token",
+          "email"
+        ],
+        "optionalClientScopes": [
+          "address",
+          "phone",
+          "offline_access",
+          "microprofile-jwt"
+        ],
+        "access": {
+          "view": true,
+          "configure": true,
+          "manage": true
+        }
+      }
+    ],
+    "roles": {
+      "client": {
+        "grafana": [
+          {
+            "name": "admin",
+            "description": "",
+            "composite": false,
+            "clientRole": true,
+            "attributes": {}
+          },
+          {
+            "name": "editor",
+            "description": "",
+            "composite": false,
+            "clientRole": true,
+            "attributes": {}
+          },
+          {
+            "name": "viewer",
+            "description": "",
+            "composite": false,
+            "clientRole": true,
+            "attributes": {}
+          }
+        ]
+      }
+    },
+    "clientScopes": [
+      {
+        "name": "roles-id-token",
+        "description": "OpenID Connect scope for add user roles to the ID token",
+        "protocol": "openid-connect",
+        "protocolMappers": [
+          {
+            "name": "client roles",
+            "protocol": "openid-connect",
+            "protocolMapper": "oidc-usermodel-client-role-mapper",
+            "consentRequired": false,
+            "config": {
+                "introspection.token.claim": "true",
+                "multivalued": "true",
+                "userinfo.token.claim": "true",
+                "id.token.claim": "true",
+                "claim.name": "resource_access.${client_id}.roles",
+                "jsonType.label": "String"
+            }
+          }
+        ]
+      }
+    ]
+  }

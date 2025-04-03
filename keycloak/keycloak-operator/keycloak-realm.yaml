@@ -34,6 +34,14 @@ spec:
       secret:
         name: keycloak-realm-env-secret
         key: PI_ADMIN_PASSWORD
+    PI_ADMIN_FIRSTNAME:
+      secret:
+        name: keycloak-realm-env-secret
+        key: PI_ADMIN_FIRSTNAME
+    PI_ADMIN_LASTNAME:
+      secret:
+        name: keycloak-realm-env-secret
+        key: PI_ADMIN_LASTNAME
   realm:
     realm: mycluster
     accessTokenLifespan: 6000
@@ -104,23 +112,12 @@ spec:
         protocol: openid-connect
         fullScopeAllowed: true
         frontchannelLogout: true
-        protocolMappers:
-          - name: roles
-            protocol: openid-connect
-            protocolMapper: oidc-usermodel-realm-role-mapper
-            consentRequired: false
-            config:
-              multivalued: 'true'
-              userinfo.token.claim: 'true'
-              id.token.claim: 'true'
-              access.token.claim: 'true'
-              claim.name: roles
-              jsonType.label: String
         defaultClientScopes:
           - web-origins
           - acr
           - profile
           - roles
+          - roles_id_token
           - email
         optionalClientScopes:
           - address
@@ -132,17 +129,36 @@ spec:
           configure: true
           manage: true
     roles:
-      realm:
-        - name: admin
-          composite: false
-        - name: viewer
-          composite: false
-        - name: editor
-          composite: false
-        - name: user
-          composite: false
+      client:
+        grafana:
+          - name: admin
+            description: ''
+            composite: false
+            clientRole: true
+            attributes: {}
+          - name: editor
+            description: ''
+            composite: false
+            clientRole: true
+            attributes: {}
+          - name: viewer
+            description: ''
+            composite: false
+            clientRole: true
+            attributes: {}
+    groups:
+      - name: admin
+        path: /admin
+        subGroups: []
+        attributes: {}
+        realmRoles: []
+        clientRoles:
+          grafana:
+            - admin
     users:
       - username: ${PI_ADMIN_USERNAME}
+        firstName: ${PI_ADMIN_FIRSTNAME}
+        lastName: ${PI_ADMIN_LASTNAME}
         email: admin@${CLUSTER_DOMAIN}
         enabled: true
         emailVerified: true
@@ -150,5 +166,6 @@ spec:
           - type: password
             value: ${PI_ADMIN_PASSWORD}
         realmRoles:
-          - admin
           - default-roles-mycluster
+        groups:
+          - admin
