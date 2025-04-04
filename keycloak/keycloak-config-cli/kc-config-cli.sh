@@ -23,5 +23,5 @@ docker run \
     -e IMPORT_VARSUBSTITUTION_ENABLED=true \
     -e IMPORT_FILES_LOCATIONS='/config/*' \
     --env-file ./.env \
-    -v ./config:/config \
+    -v ./base/config:/config \
     $DOCKER_IMAGE

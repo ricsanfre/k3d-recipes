@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kc-config-cli-config
+  namespace: keycloak
+stringData:
+  KEYCLOAK_PASSWORD: "s1cret0"

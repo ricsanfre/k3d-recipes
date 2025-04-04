@@ -13,6 +13,7 @@ helm-setup:
 	helm repo add elastic https://helm.elastic.co
 	helm repo add cnpg https://cloudnative-pg.github.io/charts
 	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo add keycloak-config-cli https://adorsys.github.io/keycloak-config-cli/helm-charts
 	helm repo update
 
 cert-manager-install:
@@ -49,7 +50,7 @@ keycloak-instance-install:
 	kubectl kustomize keycloak-app/overlays/prod | kubectl apply -f -
 
 keycloak-import-realm:
-	kubectl kustomize keycloak-realm/overlays/prod | kubectl apply -f -
+	kubectl kustomize keycloak-config-cli/overlays/prod | kubectl apply -f -
 
 keycloak-portforwarding:
 	kubectl port-forward svc/keycloak 8081:80 -n keycloak
