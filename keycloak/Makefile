@@ -43,17 +43,13 @@ keycloak-operator-install:
 	kubectl kustomize keycloak-operator/overlays/prod | kubectl apply -f -
 
 keycloak-externaldb-install:
-	kubectl apply -f keycloak-db-secret.yaml
-	kubectl apply -f keycloak-db.yaml
+	kubectl kustomize keycloak-db/overlays/prod | kubectl apply -f -
 
 keycloak-instance-install:
-	kubectl apply -f keycloak-operator/keycloak-secret.yaml
-	kubectl apply -f keycloak-operator/keycloak.yaml
+	kubectl kustomize keycloak-app/overlays/prod | kubectl apply -f -
 
-keycloak-configure:
-	kubectl apply -f keycloak-operator/keycloak-ingress.yaml
-	kubectl apply -f keycloak-operator/keycloak-realm-env.yaml
-	kubectl apply -f keycloak-operator/keycloak-realm.yaml
+keycloak-import-realm:
+	kubectl kustomize keycloak-realm/overlays/prod | kubectl apply -f -
 
 keycloak-portforwarding:
 	kubectl port-forward svc/keycloak 8081:80 -n keycloak
