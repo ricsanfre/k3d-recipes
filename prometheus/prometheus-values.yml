@@ -1,7 +1,11 @@
+# Produce cleaner resources names
+cleanPrometheusOperatorObjectNames: true
+
+# AlertManager configuration
 alertmanager:
   alertmanagerSpec:
-    externalUrl: http://monitoring.internal/alertmanager/
-    routePrefix: /
+    externalUrl: http://monitoring.local.test/alertmanager/
+    routePrefix: /alertmanager
     storage:
       volumeClaimTemplate:
         spec:
@@ -10,10 +14,28 @@ alertmanager:
           resources:
             requests:
               storage: 5Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      # Enable cert-manager to create automatically the SSL certificate and store in Secret
+      cert-manager.io/cluster-issuer: ca-issuer
+      cert-manager.io/common-name: monitoring.local.test
+    path: /alertmanager
+    pathType: Prefix
+    hosts:
+      - monitoring.local.test
+    tls:
+      - hosts:
+        - monitoring.local.test
+        secretName: monitoring-tls
+
+# Prometheus configuration
 prometheus:
   prometheusSpec:
-    externalUrl: http://monitoring.internal/prometheus/
-    routePrefix: / 
+    name: prometheus
+    externalUrl: http://monitoring.local.test/prometheus/
+    routePrefix: /prometheus
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -22,28 +44,55 @@ prometheus:
           resources:
             requests:
               storage: 5Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      # Enable cert-manager to create automatically the SSL certificate and store in Secret
+      cert-manager.io/cluster-issuer: ca-issuer
+      cert-manager.io/common-name: monitoring.local.test
+    path: /prometheus
+    pathType: Prefix
+    hosts:
+      - monitoring.local.test
+    tls:
+      - hosts:
+        - monitoring.local.test
+        secretName: monitoring-tls
+
+# Prometheus Node Exporter Configuration
+prometheus-node-exporter:
+  fullnameOverride: node-exporter
+
+# Kube-State-Metrics Configuration
+kube-state-metrics:
+  fullnameOverride: kube-state-metrics
+
+# Grafana Configuration
 grafana:
+  fullnameOverride: grafana
   # Admin user password
   adminPassword: "s1cret0"
+  # grafana configuration
   grafana.ini:
     server:
-      domain: monitoring.internal
+      domain: monitoring.local.test
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
       serve_from_sub_path: true
-
-prometheusOperator:
-  # Disable kubelet serice creation
-  kubeletService:
-    enabled: false
-kubelet:
-  enabled: false
-kubeApiServer:
-  enabled: false
-kubeControllerManager:
-  enabled: false
-kubeScheduler:
-  enabled: false
-kubeProxy:
-  enabled: false
-kubeEtcd:
-  enabled: false
+  # Grafana Ingress configuration
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    # Values can be templated
+    annotations:
+      # Enable cert-manager to create automatically the SSL certificate and store in Secret
+      cert-manager.io/cluster-issuer: ca-issuer
+      cert-manager.io/common-name: monitoring.local.test
+    path: /grafana
+    pathType: Prefix
+    hosts:
+      - monitoring.local.test
+    tls:
+      - hosts:
+        - monitoring.local.test
+        secretName: monitoring-tls

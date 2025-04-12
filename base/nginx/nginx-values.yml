@@ -1,0 +1,4 @@
+# nginx value file
+
+controller:
+  allowSnippetAnnotations: true
