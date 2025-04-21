@@ -28,7 +28,9 @@ helm-setup:
 
 .PHONY: prometheus-stack-install
 prometheus-stack-install:
-	helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f prometheus-values.yml --namespace kube-prom-stack --create-namespace
+	helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+	  -f prometheus-values.yml,prometheus-values-k3s-sol1.yaml \
+	  --namespace kube-prom-stack --create-namespace
 
 .PHONY: prometheus-portforward
 prometheus-portforward:
