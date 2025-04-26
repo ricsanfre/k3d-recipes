@@ -35,9 +35,10 @@ echo "Removing non-YAML files..."
 find ${MIXINS_DIR} -type f ! -name "*.yaml" -exec rm {} +
 echo "Non-YAML files removed."
 
-# Escape YAML files
+# Escape brackets in the rules yaml files similar to how the kube-prometheus-stack Helm chart does.
+# https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/hack/sync_prometheus_rules.py#L259-L260
 echo "Escaping YAML files..."
-find ${MIXINS_DIR} -name '*.yaml' | while read -r file; do
+find ${MIXINS_DIR} -name '*-rules.yaml' | while read -r file; do
   escape_yaml "$file"
 done
 echo "YAML files escaped."
