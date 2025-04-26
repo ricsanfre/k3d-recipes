@@ -34,6 +34,16 @@ local corednsMixin = addMixin({
   },
 });
 
+local etcdMixin = addMixin({
+  name: 'etcd',
+  dashboardFolder: 'Kubernetes',
+  mixin: (import 'github.com/etcd-io/etcd/contrib/mixin/mixin.libsonnet') + {
+    _config+:: {
+      etcdSelector: 'job="kubelet"',
+    },
+  },
+});
+
 local grafanaMixin = addMixin({
   name: 'grafana',
   dashboardFolder: 'Grafana',
@@ -87,6 +97,7 @@ local generateGrafanaDashboardConfigMaps(mixin) = if std.objectHas(mixin, 'grafa
 local nodeExporterMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(nodeExporterMixin);
 local kubernetesMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(kubernetesMixin);
 local corednsMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(corednsMixin);
+local etcdMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(etcdMixin);
 local grafanaMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(grafanaMixin);
 local prometheusMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(prometheusMixin);
 local prometheusOperatorMixinHelmGrafanaDashboards = generateGrafanaDashboardConfigMaps(prometheusOperatorMixin);
@@ -95,6 +106,7 @@ local grafanaDashboards =
   kubernetesMixinHelmGrafanaDashboards +
   nodeExporterMixinHelmGrafanaDashboards +
   corednsMixinHelmGrafanaDashboards +
+  etcdMixinHelmGrafanaDashboards +
   grafanaMixinHelmGrafanaDashboards +
   prometheusMixinHelmGrafanaDashboards +
   prometheusOperatorMixinHelmGrafanaDashboards;
@@ -104,6 +116,7 @@ local prometheusAlerts = {
   'kubernetes-mixin-rules': kubernetesMixin.prometheusRules,
   'node-exporter-mixin-rules': nodeExporterMixin.prometheusRules,
   'coredns-mixin-rules': corednsMixin.prometheusRules,
+  'etcd-mixin-rules': etcdMixin.prometheusRules,
   'grafana-mixin-rules': grafanaMixin.prometheusRules,
   'prometheus-mixin-rules': prometheusMixin.prometheusRules,
   'prometheus-operator-mixin-rules': prometheusOperatorMixin.prometheusRules,
