@@ -12,6 +12,7 @@ local kubernetesMixin = addMixin({
       kubeControllerManagerSelector: 'job="kubelet"',
       kubeApiserverSelector: 'job="kubelet"',
       kubeProxySelector: 'job="kubelet"',
+      showMultiCluster: false,
     },
   },
 });
@@ -20,7 +21,10 @@ local nodeExporterMixin = addMixin({
   name: 'node-exporter',
   dashboardFolder: 'General',
   mixin: (import 'node-mixin/mixin.libsonnet') + {
-    _config+:: {},
+    _config+:: {
+      nodeExporterSelector: 'job="node-exporter"',
+      showMultiCluster: false,
+    },
   },
 });
 
@@ -39,7 +43,7 @@ local etcdMixin = addMixin({
   dashboardFolder: 'Kubernetes',
   mixin: (import 'github.com/etcd-io/etcd/contrib/mixin/mixin.libsonnet') + {
     _config+:: {
-      etcdSelector: 'job="kubelet"',
+      clusterLabel: 'cluster',
     },
   },
 });
@@ -56,7 +60,9 @@ local prometheusMixin = addMixin({
   name: 'prometheus',
   dashboardFolder: 'Prometheus',
   mixin: (import 'prometheus/mixin.libsonnet') + {
-    _config+:: {},
+    _config+:: {
+      showMultiCluster: false,
+    },
   },
 });
 

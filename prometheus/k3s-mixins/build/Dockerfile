@@ -1,5 +1,5 @@
 FROM golang:1.24.2-alpine AS build
-
+LABEL stage=builder
 
 WORKDIR /k3s-mixins
 
@@ -35,4 +35,4 @@ RUN chmod +x generate.sh
 RUN ./generate.sh
 
 FROM scratch AS mixins
-COPY --from=build /k3s-mixins /
+COPY --from=build /k3s-mixins/templates /

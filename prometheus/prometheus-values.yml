@@ -119,12 +119,44 @@ prometheus:
         secretName: monitoring-tls
 
 # Prometheus Node Exporter Configuration
+nodeExporter:
+  enabled: true
+  operatingSystems:
+    linux:
+      enabled: true
+    aix:
+      enabled: false
+    darwin:
+      enabled: false
+
 prometheus-node-exporter:
   fullnameOverride: node-exporter
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels: ["__meta_kubernetes_pod_node_name"]
+          targetLabel: kubernetes_node
 
 # Kube-State-Metrics Configuration
 kube-state-metrics:
   fullnameOverride: kube-state-metrics
+  metricLabelsAllowlist:
+    - pods=[*]
+    - deployments=[*]
+    - persistentvolumeclaims=[*]
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels: ["__meta_kubernetes_pod_node_name"]
+          targetLabel: kubernetes_node
 
 # Grafana Configuration
 grafana:
@@ -137,33 +169,101 @@ grafana:
       domain: monitoring.local.test
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
       serve_from_sub_path: true
-    ##
-    ## Provisioning sidecars
-    ##
-    sidecar:
-      dashboards:
-        # Enable dashboard sidecar
-        enabled: true
-        # Enable discovery in all namespaces
-        searchNamespace: ALL
-        # Search for ConfigMaps containing `grafana_dashboard` label
-        label: grafana_dashboard
-        # Annotation containing the folder where sidecar will place the dashboard.
-        folderAnnotation: grafana_folder
-        provider:
-          # disableDelete to activate a import-only behaviour
-          disableDelete: true
-          # allow Grafana to replicate dashboard structure from filesystem
-          foldersFromFilesStructure: true
-      datasources:
-        # Enable datasource sidecar
-        enabled: true
-        # Enable discovery in all namespaces
-        searchNamespace: ALL
-        # Search for ConfigMaps containing `grafana_datasource` label
-        label: grafana_datasource
-        labelValue: "1"
-
+  ##
+  ## Provisioning sidecars
+  ##
+  sidecar:
+    dashboards:
+      # Enable dashboard sidecar
+      enabled: true
+      # Enable discovery in all namespaces
+      searchNamespace: ALL
+      # Search for ConfigMaps containing `grafana_dashboard` label
+      label: grafana_dashboard
+      # Annotation containing the folder where sidecar will place the dashboard.
+      folderAnnotation: grafana_folder
+      provider:
+        # disableDelete to activate a import-only behaviour
+        disableDelete: true
+        # allow Grafana to replicate dashboard structure from filesystem
+        foldersFromFilesStructure: true
+    datasources:
+      # Enable datasource sidecar
+      enabled: true
+      # Enable discovery in all namespaces
+      searchNamespace: ALL
+      # Search for ConfigMaps containing `grafana_datasource` label
+      label: grafana_datasource
+      labelValue: "1"
+  
+  ## Provisioning Dashboards
+  # Dashboard Providers
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default-folder
+        - name: infrastructure
+          orgId: 1
+          folder: "Infrastructure"
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/infrastructure-folder
+        - name: kubernetes
+          orgId: 1
+          folder: Kubernetes
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/kubernetes-folder
+  # Dashboards
+  dashboards:
+    kubernetes:
+      kubernetes-api-server:
+        # renovate: depName="Kubernetes / System / API Server"
+        gnetId: 15761
+        revision: 19
+        datasource: Prometheus
+      kubernetes-coredns:
+        # renovate: depName="Kubernetes / System / CoreDNS"
+        gnetId: 15762
+        revision: 20
+        datasource: Prometheus
+      kubernetes-global:
+        # renovate: depName="Kubernetes / Views / Global"
+        gnetId: 15757
+        revision: 43
+        datasource: Prometheus
+      kubernetes-namespaces:
+        # renovate: depName="Kubernetes / Views / Namespaces"
+        gnetId: 15758
+        revision: 42
+        datasource: Prometheus
+      kubernetes-nodes:
+        # renovate: depName="Kubernetes / Views / Nodes"
+        gnetId: 15759
+        revision: 35
+        datasource: Prometheus
+      kubernetes-pods:
+        # renovate: depName="Kubernetes / Views / Pods"
+        gnetId: 15760
+        revision: 36
+        datasource: Prometheus
+      kubernetes-volumes:
+        # renovate: depName="K8s / Storage / Volumes / Cluster"
+        gnetId: 11454
+        revision: 14
+        datasource: Prometheus    
   # Grafana Ingress configuration
   ingress:
     enabled: true

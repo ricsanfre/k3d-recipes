@@ -19,5 +19,3 @@ kubeProxy:
   enabled: false
 kubeScheduler:
   enabled: false
-# `k3s` runs SQLite by default and not etcd, so we don't need to scrape etcd.
-kubeEtcd: {}
