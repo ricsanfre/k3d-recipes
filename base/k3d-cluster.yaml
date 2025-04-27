@@ -2,8 +2,8 @@ apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
   name: mycluster
-servers: 1
-agents: 2
+servers: 3
+agents: 3
 # Export traefik/nginx port
 # Available at http://localhost and https://localhost
 ports:
@@ -35,5 +35,9 @@ options:
           - server:*
       # Disable traefik
       - arg: --disable=traefik
+        nodeFilters:
+          - server:*
+      # expose etcd metrics
+      - arg: --etcd-expose-metrics=true
         nodeFilters:
           - server:*
