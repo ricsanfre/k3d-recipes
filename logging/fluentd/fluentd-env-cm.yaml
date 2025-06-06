@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-env-configmap
+data:
+  FLUENT_ELASTICSEARCH_HOST: "efk-es-http.elastic"
+  FLUENT_ELASTICSEARCH_PORT: "9200"
+  LOKI_URL: "http://loki-gateway.loki"

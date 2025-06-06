@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+data:
+  custom_parsers.conf: |
+    [PARSER]
+        Name syslog-rfc3164-nopri
+        Format regex
+        Regex /^(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$/
+        Time_Key time
+        Time_Format %b %d %H:%M:%S
+        Time_Keep Off
+  fluent-bit.conf: |
+    [SERVICE]
+        Daemon Off
+        Flush 1
+        Log_Level info
+        Parsers_File parsers.conf
+        Parsers_File custom_parsers.conf
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port 2020
+        Health_Check On
+        storage.path /var/log/fluentbit/storage
+        storage.sync normal
+        storage.checksum off
+        storage.backlog.mem_limit 5M
+        storage.metrics on
+
+    [INPUT]
+        Name tail
+        Alias input.kube
+        Path /var/log/containers/*.log
+        Path_Key filename
+        multiline.parser docker, cri
+        Tag kube.*
+        DB /var/log/fluentbit/flb_kube.db
+        storage.type filesystem
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines True
+        Inotify_Watcher False
+
+    [INPUT]
+        Name tail
+        Alias input.host
+        Tag host.*
+        Path /var/log/auth.log, /var/log/syslog
+        Path_Key filename
+        Mem_Buf_Limit 5MB
+        storage.type filesystem
+        DB /var/log/fluentbit/flb_host.db
+        Parser syslog-rfc3164-nopri
+        Inotify_Watcher False
+
+    [FILTER]
+        name                  multiline
+        match                 *
+        multiline.key_content log
+        multiline.parser      go, java, python
+
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Buffer_Size 512k
+        Kube_Tag_Prefix kube.var.log.containers.
+        Merge_Log Off
+        Merge_Log_Trim Off
+        Merge_Log_Key log_processed
+        Keep_Log On
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+        Labels On
+        Annotations Off
+
+    [FILTER]
+        Name modify
+        Match kube.*
+        Remove _p
+        Rename log message
+
+    [FILTER]
+        name lua
+        match host.*
+        script /fluent-bit/scripts/adjust_ts.lua
+        call local_timestamp_to_UTC
+
+    [OUTPUT]
+        Name forward
+        match *
+        Host ${FLUENT_AGGREGATOR_HOST}
+        Port ${FLUENT_AGGREGATOR_PORT}
+        Self_Hostname ${FLUENT_SELFHOSTNAME}
+        Shared_Key ${FLUENT_AGGREGATOR_SHARED_KEY}
+        tls On
+        tls.verify Off
+
+  json-exporter-config.yml: |
+    modules:
+      default:
+        metrics:
+          - name: fluenbit_storage_layer
+            type: object
+            path: '{.storage_layer}'
+            help: The total number of chunks in the fs storage
+            values:
+              fs_chunks_up: '{.chunks.fs_chunks_up}'
+              fs_chunks_down: '{.chunks.fs_chunks_down}'

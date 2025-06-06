@@ -3,9 +3,8 @@ apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: efk
-  namespace: logging
 spec:
-  version: 8.6.0
+  version: 8.15.0
   nodeSets:
   - name: default
     count: 1    # One node elastic search cluster
@@ -20,6 +19,13 @@ spec:
           resources:
             requests:
               storage: 5Gi
+  auth:
+    roles:
+      - secretName: es-fluentd-roles-secret
+      - secretName: es-prometheus-roles-secret
+    fileRealm:
+      - secretName: es-fluentd-user-file-realm
+      - secretName: es-prometheus-user-file-realm
   http:
     tls: # Disabling TLS automatic configuration. Note(3)
       selfSignedCertificate:
@@ -29,10 +35,9 @@ spec:
 apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
-  name: kibana
-  namespace: logging
+  name: efk
 spec:
-  version: 8.6.0
+  version: 8.15.0
   count: 1
   elasticsearchRef:
     name: "efk"

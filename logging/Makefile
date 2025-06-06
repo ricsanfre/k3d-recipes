@@ -1,39 +1,52 @@
-create-k3d:
-	k3d cluster create mycluster -c ../k3d-cluster.yaml
+clean:
+	cd ../base && $(MAKE) $@
 
-delete-k3d:
-	k3d cluster delete mycluster
+base:
+	cd ../base && $(MAKE) K3D_SERVERS=1 K3D_AGENTS=2
 
 helm-setup:
 	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo add fluent https://fluent.github.io/helm-charts
 	helm repo add elastic https://helm.elastic.co
+	helm repo add mongodb https://mongodb.github.io/helm-charts
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo update
 
-
 es-install:
-	kubectl create namespace logging
-	helm install elastic-operator elastic/eck-operator --namespace logging
-	kubectl apply -f elasticsearch.yml
+	kubectl create namespace elastic
+	helm upgrade --install elastic-operator elastic/eck-operator --namespace elastic
+	kubectl kustomize elastic | kubectl apply -f -
+
+es-exporter:
+	helm upgrade --install -f prometheus-es-exporter-values.yaml prometheus-elasticsearch-exporter prometheus-community/prometheus-elasticsearch-exporter --namespace elastic 
+
+mongodb-install:
+	kubectl create namespace mongodb
+	helm install community-operator mongodb/community-operator --namespace mongodb
+	kubectl apply -f mongodb-database.yaml
+
+mongodb-get-connection-string:
+	kubectl get secret example-mongodb-admin-my-user -n mongodb -o json | jq -r '.data | with_entries(.value |= @base64d)'
+
+mongosh:
+	kubectl run -n mongodb --it mongo-shell --image=mongo --rm -- /mongosh
 
 get-es-passwd:
-	kubectl get secret efk-es-elastic-user -o jsonpath='{.data.elastic}' -n logging | base64 -d;echo
+	kubectl get secret efk-es-elastic-user -o jsonpath='{.data.elastic}' -n elastic | base64 -d;echo
 
 kibana-port-forward:
-	kubectl port-forward svc/kibana-kb-http 5601:5601 -n logging
+	kubectl port-forward svc/efk-kb-http 5601:5601 -n elastic
 
 loki-install:
-	kubectl create namespace logging
-	helm install loki grafana/loki --namespace logging -f loki-values.yml
+	kubectl create namespace loki
+	helm install loki grafana/loki --namespace loki -f loki-values.yml
 
-fluent-install-loki:
-	helm install fluentd fluent/fluentd -f fluentd-values.yml -n logging
-	helm install fluent-bit fluent/fluent-bit -f fluentbit-values.yml -n logging
-
-fluent-install-es:
-	kubectl apply -f fluentd-template-cm.yml
-	helm install fluentd fluent/fluentd -f fluentd-values-es.yml -n logging
-	helm install fluent-bit fluent/fluent-bit -f fluentbit-values.yml -n logging
+fluent-install:
+	kubectl create namespace fluent
+	kubectl kustomize fluentd | kubectl apply -f -
+	kubectl kustomize fluent-bit | kubectl apply -f -
+	helm install fluentd fluent/fluentd -f fluentd-values.yml -n fluent
+	helm install fluent-bit fluent/fluent-bit -f fluentbit-values.yml -n fluent
 
 grafana-install:
 	kubectl create namespace grafana

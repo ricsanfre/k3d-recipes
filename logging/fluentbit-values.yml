@@ -1,8 +1,4 @@
 ---
-# fluentbit helm chart values
-
-image:
-  tag: 2.0.2
 
 daemonSetVolumes:
   - name: varlog
@@ -13,97 +9,46 @@ daemonSetVolumeMounts:
   - name: varlog
     mountPath: /var/log
 
-# Fluentbit config
-config:
-  # fluent-bit.config SERVICE. **NOTE 2**
-  # Helm chart defaults are Ok
-  service: |
-     [SERVICE]
-       Daemon Off
-       Flush 1
-       Log_Level info
-       Parsers_File parsers.conf
-       Parsers_File custom_parsers.conf
-       HTTP_Server On
-       HTTP_Listen 0.0.0.0
-       HTTP_Port 2020
-       Health_Check On
-       # Log_Level debug
-  # fluent-bit.config INPUT. **NOTE 3**
-  inputs: |
+# Environment variables used by Fluent Config files
+env:
+  # Fluentd deployment service
+  - name: FLUENT_AGGREGATOR_HOST
+    value: fluentd
 
-    [INPUT]
-        Name tail
-        Path /var/log/containers/*.log
-        Path_Key filename
-        multiline.parser cri
-        Tag kube.*
-        DB /var/log/flb_kube.db
-        Mem_Buf_Limit 5MB
-        Skip_Long_Lines True
+  # Default fluentd forward port
+  - name: FLUENT_AGGREGATOR_PORT
+    value: "24224"
+  - name: FLUENT_AGGREGATOR_SHARED_KEY
+    valueFrom:
+      secretKeyRef:
+        name: fluent-bit-env-secret
+        key: FLUENT_AGGREGATOR_SHARED_KEY
 
-    [INPUT]
-        Name tail
-        Tag host.*
-        Path /var/log/auth.log, /var/log/syslog
-        Path_Key filename
-        DB /var/log/flb_host.db
-        Parser syslog-rfc3164-nopri
+  # Setting nodeName as environment variable
+  - name: FLUENT_SELFHOSTNAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
 
-  # fluent-bit.config OUTPUT **NOTE 4**
-  outputs: |
+# Environment variables used by Fluent Config files
+# envFrom:
+#   - configMapRef:
+#       name: fluent-bit-env-configmap
+#   - secretRef:
+#       name: fluent-bit-env-secret
 
-    [OUTPUT]
-        Name forward
-        match *
-        Host fluentd
-        Port 24224
 
-  customParsers: |
+# Define configuration in external configMap
+# ConfigMap mounted as /etc/fluent/conf directory
+existingConfigMap: fluent-bit-config
 
-    [PARSER]
-        Name syslog-rfc3164-nopri
-        Format regex
-        Regex /^(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$/
-        Time_Key time
-        Time_Format %b %d %H:%M:%S
-        Time_Keep False
 
-  filters: |
+command:
+  - /fluent-bit/bin/fluent-bit
 
-    [FILTER]
-        name                  multiline
-        match                 *
-        multiline.key_content log
-        multiline.parser      go, java, python
-
-    [FILTER]
-        Name kubernetes
-        Match kube.*
-        Merge_Log On
-        Merge_Log_Trim Off
-        Merge_Log_Key log_processed
-        Keep_Log On
-        K8S-Logging.Parser On
-        K8S-Logging.Exclude On
-        Labels On
-        Annotations Off
-
-    [FILTER]
-        Name modify
-        Match kube.*
-        Remove _p
-        Rename log message
-
-    [FILTER]
-        name lua
-        match host.*
-        script /fluent-bit/scripts/adjust_ts.lua
-        call local_timestamp_to_UTC
-
-    [FILTER]
-        Name modify
-        Match host.*
+args:
+  - --workdir=/fluent-bit/etc
+  - --config=/fluent-bit/etc/conf/fluent-bit.yaml
 
 luaScripts:
   adjust_ts.lua: |
@@ -114,16 +59,33 @@ luaScripts:
         utc_time_diff = os.difftime(os.time(localdate), os.time(utcdate))
         return 1, timestamp - utc_time_diff, record
     end
-
+    
+# Enable fluentbit instalaltion on master node
 tolerations:
   - key: node-role.kubernetes.io/master
     operator: Exists
     effect: NoSchedule
 
+# Init container. Create directory for fluentbit
 initContainers:
-  - name: init-log-directory
+  - name: init-fluentbit-directory
     image: busybox
-    command: ['/bin/sh', '-c', 'if [ ! -d /var/log/fluentbit ]; then mkdir -p /var/log/fluentbit; fi']
+    command: ['/bin/sh', '-c', 'if [ ! -d /var/log/fluentbit ]; then mkdir -p /var/log/fluentbit; fi ; if [ ! -d /var/log/fluentbit/tail-db ]; then mkdir -p /var/log/fluentbit/tail-db; fi ; if [ ! -d /var/log/fluentbit/storage ]; then mkdir -p /var/log/fluentbit/storage; fi']
     volumeMounts:
       - name: varlog
         mountPath: /var/log
+
+# Sidecar container to export storage metrics
+extraContainers:
+  - name: json-exporter
+    image: quay.io/prometheuscommunity/json-exporter
+    command: ['/bin/json_exporter']
+    args: ['--config.file=/json-exporter-config.yml']
+    ports:
+      - containerPort: 7979
+        name: http
+        protocol: TCP
+    volumeMounts:
+      - mountPath: /json-exporter-config.yml
+        name: config
+        subPath: json-exporter-config.yml

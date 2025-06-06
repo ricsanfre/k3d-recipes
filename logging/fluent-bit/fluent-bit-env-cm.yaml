@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-env-configmap
+data:
+  FLUENT_AGGREGATOR_HOST: fluentd
+  FLUENT_AGGREGATOR_PORT: "24224"
