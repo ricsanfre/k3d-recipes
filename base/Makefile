@@ -9,7 +9,7 @@ clean: delete-k3d
 
 .PHONY : create-k3d
 create-k3d:
-	k3d cluster create mycluster -c k3d-cluster.yaml
+	K3D_SERVERS=$(K3D_SERVERS) K3D_AGENTS=$(K3D_AGENTS) k3d cluster create mycluster -c k3d-cluster.yaml
 
 .PHONY : delete-k3d
 delete-k3d:

@@ -9,41 +9,38 @@ PROM_FORMULA=sum by (instance,cpu) (node_cpu_seconds_total)
 
 default: all
 
-.PHONY : all
+.PHONY: all clean base helm-setup promtheus-stack-install grafana-install prometheus-portforward grafana-portforward query-range-single-metric query-range-formula
+
 all: base helm-setup prometheus-stack-install
 
-.PHONY: clean
 clean:
 	cd ../base && $(MAKE) $@
 
-.PHONY: base
 base:
-	cd ../base && $(MAKE)
+	cd ../base && $(MAKE) K3D_SERVERS=3 K3D_AGENTS=3
 
-.PHONY: helm-setup
 helm-setup:
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo update
 
-.PHONY: prometheus-stack-install
 prometheus-stack-install:
 	helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
-	  -f prometheus-values.yml,prometheus-values-k3s-sol1.yaml \
+	  -f prometheus-values.yml,prometheus-values-k3s-sol2.yaml \
+	  -f prometheus-values-disable-grafana.yaml \
 	  --namespace kube-prom-stack --create-namespace
 
-.PHONY: prometheus-portforward
+grafana-install:
+	helm upgrade --install grafana grafana/grafana -f grafana-values.yaml --namespace grafana --create-namespace
+
 prometheus-portforward:
 	kubectl port-forward svc/kube-prometheus-stack-prometheus 9090:9090 -n monitoring
 
-.PHONY: grafana-portforward
 grafana-portforward:
 	kubectl port-forward svc/kube-prometheus-stack-grafana 3000:80 -n monitoring
 
-.PHONY: query-range-single-metric
 query-range-single-metric:
 	curl http://localhost:9090/api/v1/query_range --data-urlencode 'query=${PROM_SINGLE_METRIC}' --data-urlencode 'start=${DATE_5MIN_AGO}' --data-urlencode 'end=${DATE_NOW}' --data-urlencode 'step=15s' | jq 
 
-.PHONY: query-range-formula
 query-range-formula:
 	curl http://localhost:9090/api/v1/query_range --data-urlencode 'query=${PROM_FORMULA}' --data-urlencode 'start=${DATE_5MIN_AGO}' --data-urlencode 'end=${DATE_NOW}' --data-urlencode 'step=15s' | jq 
