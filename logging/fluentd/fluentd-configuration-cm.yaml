@@ -62,18 +62,18 @@ data:
             @label @FLUENT_LOG
         </match>
         ## Get kubernetes fields
-        <filter kube.**>
-            @type record_modifier
-            remove_keys kubernetes, __dummy__, __dummy2__
-            <record>
-                __dummy__   ${ p = record["kubernetes"]["labels"]["app"]; p.nil? ? p : record['app'] = p; }
-                __dummy2__   ${ p = record["kubernetes"]["labels"]["app.kubernetes.io/name"]; p.nil? ? p : record['app'] = p; }
-                namespace ${ record.dig("kubernetes","namespace_name") }
-                pod ${ record.dig("kubernetes", "pod_name") }
-                container ${ record.dig("kubernetes", "container_name") }
-                host ${ record.dig("kubernetes", "host")}
-            </record>
-        </filter>
+        # <filter kube.**>
+        #     @type record_modifier
+        #     remove_keys kubernetes, __dummy__, __dummy2__
+        #     <record>
+        #         __dummy__   ${ p = record["kubernetes"]["labels"]["app"]; p.nil? ? p : record['app'] = p; }
+        #         __dummy2__   ${ p = record["kubernetes"]["labels"]["app.kubernetes.io/name"]; p.nil? ? p : record['app'] = p; }
+        #         namespace ${ record.dig("kubernetes","namespace_name") }
+        #         pod ${ record.dig("kubernetes", "pod_name") }
+        #         container ${ record.dig("kubernetes", "container_name") }
+        #         host ${ record.dig("kubernetes", "host")}
+        #     </record>
+        # </filter>
         <match **>
             @type relabel
             @label @DISPATCH
@@ -126,15 +126,14 @@ data:
             @type record_transformer
             enable_ruby
             <record>
-                # index_app_name ${record['namespace'] + '.' + record['container']}
-                index_app_name ${record['namespace']}
+                index_name ${record['namespace']}
             </record>
         </filter>
         <filter host.**>
             @type record_transformer
             enable_ruby
             <record>
-                index_app_name "host"
+                index_name "host"
             </record>
         </filter>
         # Send received logs to elasticsearch
@@ -163,14 +162,13 @@ data:
             # Do not use logstash format
             logstash_format false
             # Setting index_name
-            index_name fluentd-${index_app_name}
+            index_name fluentd-${index_name}
             # specifying time key
             time_key time
             # including @timestamp field
             include_timestamp true
             # ILM Settings - WITH ROLLOVER support
             # https://github.com/uken/fluent-plugin-elasticsearch/blob/master/README.Troubleshooting.md#enable-index-lifecycle-management
-            # application_name ${index_app_name}
             index_date_pattern ""
             enable_ilm true
             ilm_policy_id fluentd-policy
@@ -179,11 +177,11 @@ data:
             # index template
             use_legacy_template false
             template_overwrite true
-            template_name fluentd-${index_app_name}
+            template_name fluentd-${index_name}
             template_file "/etc/fluent/template/fluentd-es-template.json"
-            customize_template {"<<shard>>": "1","<<replica>>": "0", "<<TAG>>":"${index_app_name}"}
-            remove_keys idex_app_name
-            <buffer tag, index_app_name>
+            customize_template {"<<shard>>": "1","<<replica>>": "0", "<<TAG>>":"${index_name}"}
+            remove_keys index_name
+            <buffer tag, index_name>
                 flush_thread_count "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_FLUSH_THREAD_COUNT'] || '8'}"
                 flush_interval "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_FLUSH_INTERVAL'] || '5s'}"
                 chunk_limit_size "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_CHUNK_LIMIT_SIZE'] || '2M'}"
@@ -195,14 +193,6 @@ data:
     </label>
     # Loki Output
     <label @OUTPUT_LOKI>
-        # Rename log_proccessed to message
-        <filter kube.**>
-            @type record_modifier
-            remove_keys __dummy__, log_processed
-            <record>
-                __dummy__ ${if record.has_key?('log_processed'); record['message'] = record['log_processed']; end; nil}
-            </record>
-        </filter>
         <match **>
             @type loki
             @id out_loki_kube

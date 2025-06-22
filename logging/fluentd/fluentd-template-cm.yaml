@@ -22,7 +22,7 @@ data:
           "dynamic_templates" : [
             {
               "message_field" : {
-                "path_match" : "message",
+                "path_match" : "log",
                 "match_mapping_type" : "string",
                 "mapping" : {
                   "type" : "text",

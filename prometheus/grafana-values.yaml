@@ -150,7 +150,7 @@ datasources:
       type: loki
       uid: loki
       access: proxy
-      url: http://loki-read-headless.loki.svc.cluster.local:3100
+      url: http://loki-headless.loki.svc.cluster.local:3100
       jsonData:
         derivedFields:
             # Traefik traces integration

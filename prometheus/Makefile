@@ -29,6 +29,7 @@ prometheus-stack-install:
 	  -f prometheus-values.yml,prometheus-values-k3s-sol2.yaml \
 	  -f prometheus-values-disable-grafana.yaml \
 	  --namespace kube-prom-stack --create-namespace
+	kubectl kustomize k3s-mixins | kubectl apply -f -
 
 grafana-install:
 	helm upgrade --install grafana grafana/grafana -f grafana-values.yaml --namespace grafana --create-namespace

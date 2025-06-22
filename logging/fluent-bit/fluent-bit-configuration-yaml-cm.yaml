@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: fluent-bit-config
 data:
-  fluent-bit.yaml: |
+  fluent-bit.yaml: |-
     service:
-      daemon: off
+      daemon: false
       flush: 1
       log_level: info
       http_server: true
@@ -16,20 +16,16 @@ data:
       storage.path: /var/log/fluentbit/storage
       storage.sync: full
       storage.checksum: true
-      storage.backlog:
       storage.backlog.mem_limit: 5M
       storage.metrics: true
-
     parsers:
       - name: syslog-rfc3164-nopri
         format: regex
-        regex: '/^(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$/'
+        regex: '/^(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<log>.*)$/'
         time_key: time
         time_format: '%b %d %H:%M:%S'
         time_keep: false
-
     pipeline:
-
       inputs:
         - name: tail
           alias: input.kube
@@ -40,51 +36,150 @@ data:
           db: /var/log/fluentbit/flb_kube.db
           storage.type: filesystem
           skip_long_lines: true
-
+          # processors:
+          #   logs:
+          #     - name: multiline
+          #       multiline.key_content: log
+          #       multiline.parser: go, java, python
+          #     - name: kubernetes
+          #       buffer_size: 512k
+          #       kube_tag_prefix: kube.var.log.containers.
+          #       merge_log: false
+          #       k8s-logging.parser: true
+          #       k8s-logging.exclude: true
+          #       labels: true
+          #       annotations: false
+          #     - name: lua
+          #       script: /fluent-bit/scripts/parse_kubernetes_metadata.lua
+          #       call: extract_app_name
+          #     - name: nest
+          #       operation: lift
+          #       nested_under: kubernetes
+          #       add_prefix: kubernetes_
+          #     - name: modify
+          #       rename: kubernetes_pod_name pod
+          #       rename: kubernetes_namespace_name namespace
+          #       rename: kubernetes_container_name container
+          #       rename: kubernetes_host host
+          #       remove_wildcard: kubernetes_
+          #       remove: _p
+        - name: tail
+          alias: input.host
+          path: /var/log/auth.log, /var/log/syslog
+          path_key: filename
+          parser: syslog-rfc3164-nopri
+          tag: host.*
+          db: /var/log/fluentbit/flb_host.db
+          storage.type: filesystem
       filters:
-
         - name: multiline
           match: '*'
           multiline.key_content: log
           multiline.parser: go, java, python
-        
         - name: kubernetes
           match: kube.*
           buffer_size: 512k
           kube_tag_prefix: kube.var.log.containers.
           merge_log: false
-          merge_log_trim: false
-          merge_log_key: log_processed
-          keep_log: true
           k8s-logging.parser: true
           k8s-logging.exclude: true
           labels: true
-          annotations: false
-        
+          annotations: false    
+        - name: lua
+          match: kube.*
+          call: extract_app_name
+          code: |
+            function extract_app_name(tag, timestamp, record)
+                if record["kubernetes"] ~= nil then
+                  if record["kubernetes"]["labels"]["app.kubernetes.io/name"] ~= nil then
+                      record["app"] = record["kubernetes"]["labels"]["app.kubernetes.io/name"]
+                  end
+                  if record["kubernetes"]["labels"]["app"] ~= nil then
+                      record["app"] = record["kubernetes"]["labels"]["app"]
+                  end
+                end
+                return 1, timestamp, record
+            end
+        - name: nest
+          match: kube.*
+          operation: lift
+          nested_under: kubernetes
+          add_prefix: kubernetes_
         - name: modify
           match: kube.*
+          rename: kubernetes_pod_name pod
+          rename: kubernetes_namespace_name namespace
+          rename: kubernetes_container_name container
+          rename: kubernetes_host host
+          remove_wildcard: kubernetes_
           remove: _p
-          rename: log message
-
+      
+        # Modify filter does not work with record accessors. They can be used only in conditions
+        # ref: https://github.com/fluent/fluent-bit/issues/4651
+        # - name: modify
+        #   match: kube.*
+        #   condition:
+        #     - key_exists $kubernetes['labels']['app']
+        #   set:
+        #     - app $kubernetes['labels']['app']
+        # - name: modify
+        #   match: kube.*
+        #   condition:
+        #     - key_does_not_exist $kubernetes['labels']['app']
+        #     - key_exists $kubernetes['labels']['app.kubernetes.io/name']
+        #   set:
+        #     - app $kubernetes['labels']['app.kubernetes.io/name']
+        # - name: modify
+        #   match: kube.*
+        #   add:
+        #     - namespace $kubernetes['namespace_name']
+        #     - pod $kubernetes['pod_name']
+        #     - container $kubernetes['container_name']
+        #     - host $kubernetes['host']
+        #   remove:
+        #     - _p
+        #     - kubernetes
+        #   rename:
+        #     - log message
       outputs:
-        - name: forward
-          alias: output.aggregator
+        # - name: stdout
+        #   alias: output.stdout
+        #   match: '*'
+        #   format: json
+        - name: es
+          alias: output.es
           match: '*'
-          host: ${FLUENT_AGGREGATOR_HOST}
-          port: ${FLUENT_AGGREGATOR_PORT}
-          self_hostname: ${FLUENT_SELFHOSTNAME}
-          shared_key: ${FLUENT_AGGREGATOR_SHARED_KEY}
-          tls: true
-          tls.verify: false
-
-  json-exporter-config.yml: |
-    modules:
-      default:
-        metrics:
-          - name: fluenbit_storage_layer
-            type: object
-            path: '{.storage_layer}'
-            help: The total number of chunks in the fs storage
-            values:
-              fs_chunks_up: '{.chunks.fs_chunks_up}'
-              fs_chunks_down: '{.chunks.fs_chunks_down}'
+          host: ${FLUENT_ELASTICSEARCH_HOST}
+          port: ${FLUENT_ELASTICSEARCH_PORT}
+          http_user: ${FLUENT_ELASTICSEARCH_USER}
+          http_passwd: ${FLUENT_ELASTICSEARCH_PASSWORD}
+          # Indexes are created following logstash format <logstash_prefix>-<YYYY-mm-dd>
+          logstash_format: true
+          logstash_prefix: fluentbit
+          # Mandatory for ES 8.x
+          suppress_type_name: true
+          # Disable TLS
+          tls: false
+          # Disable limit in retries
+          retry_limit: false
+        - name: loki
+          alias: output.loki
+          match: '*'
+          host: ${FLUENT_LOKI_HOST}
+          port: ${FLUENT_LOKI_PORT}
+          labels: job=fluentbit
+          label_keys: $app, $container, $pod, $namespace, $host, $filename
+          line_format: json
+          # Disable TLS
+          tls: false
+           # Disable limit in retries
+          retry_limit: false
+        # - name: forward
+        #   alias: output.aggregator
+        #   match: '*'
+        #   host: ${FLUENT_AGGREGATOR_HOST}
+        #   port: ${FLUENT_AGGREGATOR_PORT}
+        #   self_hostname: ${FLUENT_SELFHOSTNAME}
+        #   shared_key: ${FLUENT_AGGREGATOR_SHARED_KEY}
+        #   tls: true
+        #   tls.verify: false

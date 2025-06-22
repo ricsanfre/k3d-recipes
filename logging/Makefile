@@ -1,3 +1,6 @@
+
+.PHONY: all clean base helm-setup es-install es-exporter get-es-password kibana-port-forward loki-install fluent-install
+
 clean:
 	cd ../base && $(MAKE) $@
 
