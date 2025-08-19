@@ -61,19 +61,34 @@ data:
             @type relabel
             @label @FLUENT_LOG
         </match>
-        ## Get kubernetes fields
-        # <filter kube.**>
-        #     @type record_modifier
-        #     remove_keys kubernetes, __dummy__, __dummy2__
-        #     <record>
-        #         __dummy__   ${ p = record["kubernetes"]["labels"]["app"]; p.nil? ? p : record['app'] = p; }
-        #         __dummy2__   ${ p = record["kubernetes"]["labels"]["app.kubernetes.io/name"]; p.nil? ? p : record['app'] = p; }
-        #         namespace ${ record.dig("kubernetes","namespace_name") }
-        #         pod ${ record.dig("kubernetes", "pod_name") }
-        #         container ${ record.dig("kubernetes", "container_name") }
-        #         host ${ record.dig("kubernetes", "host")}
-        #     </record>
-        # </filter>
+        # Calculate prometheus metrics
+        <filter kube.**>
+            @type prometheus
+            <metric>
+                name fluentd_input_status_num_k8s_records_total
+                type counter
+                desc The total number of incoming records
+                <labels>
+                    host $.host
+                    app_namespace $.namespace
+                    app $.app
+                    app_pod $.pod
+                    app_container $.container
+                </labels>
+            </metric>
+        </filter>
+        <filter host.**>
+            @type prometheus
+            <metric>
+                name fluentd_input_status_num_host_records_total
+                type counter
+                desc The total number of incoming records
+                <labels>
+                    host $.host
+                    filename $.filename
+                </labels>
+            </metric>
+        </filter>
         <match **>
             @type relabel
             @label @DISPATCH
@@ -89,19 +104,6 @@ data:
     </label>
     # Dispatch logs to different destinations
     <label @DISPATCH>
-        # Calculate prometheus metrics
-        <filter **>
-            @type prometheus
-            <metric>
-                name fluentd_input_status_num_records_total
-                type counter
-                desc The total number of incoming records
-                <labels>
-                tag ${tag}
-                hostname ${host}
-                </labels>
-            </metric>
-        </filter>
         # Copy log stream to different outputs
         <match **>
             @type copy
@@ -112,7 +114,24 @@ data:
             <store>
                 @type relabel
                 @label @OUTPUT_LOKI
-            </store>  
+            </store>
+            # Calculate Output logs
+            <store>
+                @type prometheus
+                <metric>
+                    name fluentd_output_status_num_records_total
+                    type counter
+                    desc The total number of outgoing records
+                    <labels>
+                        host $.host
+                        filename $.filename
+                        app_namespace $.namespace
+                        app $.app
+                        app_pod $.pod
+                        app_container $.container
+                    </labels>
+                </metric>
+            </store>
         </match>
     </label>
   04_output.conf: |-
@@ -172,7 +191,7 @@ data:
             index_date_pattern ""
             enable_ilm true
             ilm_policy_id fluentd-policy
-            ilm_policy {"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_size":"10gb","max_age":"7d"}}},"warm":{"min_age":"2d","actions":{"shrink":{"number_of_shards":1},"forcemerge":{"max_num_segments":1}}},"delete":{"min_age":"7d","actions":{"delete":{"delete_searchable_snapshot":true}}}}}}
+            ilm_policy {"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_size":"10gb","max_age":"1d"}}},"delete":{"min_age":"7d","actions":{"delete":{}}}}}}
             ilm_policy_overwrite true
             # index template
             use_legacy_template false

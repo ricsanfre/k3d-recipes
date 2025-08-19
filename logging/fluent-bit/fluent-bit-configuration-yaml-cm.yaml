@@ -146,40 +146,40 @@ data:
         #   alias: output.stdout
         #   match: '*'
         #   format: json
-        - name: es
-          alias: output.es
-          match: '*'
-          host: ${FLUENT_ELASTICSEARCH_HOST}
-          port: ${FLUENT_ELASTICSEARCH_PORT}
-          http_user: ${FLUENT_ELASTICSEARCH_USER}
-          http_passwd: ${FLUENT_ELASTICSEARCH_PASSWORD}
-          # Indexes are created following logstash format <logstash_prefix>-<YYYY-mm-dd>
-          logstash_format: true
-          logstash_prefix: fluentbit
-          # Mandatory for ES 8.x
-          suppress_type_name: true
-          # Disable TLS
-          tls: false
-          # Disable limit in retries
-          retry_limit: false
-        - name: loki
-          alias: output.loki
-          match: '*'
-          host: ${FLUENT_LOKI_HOST}
-          port: ${FLUENT_LOKI_PORT}
-          labels: job=fluentbit
-          label_keys: $app, $container, $pod, $namespace, $host, $filename
-          line_format: json
-          # Disable TLS
-          tls: false
-           # Disable limit in retries
-          retry_limit: false
-        # - name: forward
-        #   alias: output.aggregator
+        # - name: es
+        #   alias: output.es
         #   match: '*'
-        #   host: ${FLUENT_AGGREGATOR_HOST}
-        #   port: ${FLUENT_AGGREGATOR_PORT}
-        #   self_hostname: ${FLUENT_SELFHOSTNAME}
-        #   shared_key: ${FLUENT_AGGREGATOR_SHARED_KEY}
-        #   tls: true
-        #   tls.verify: false
+        #   host: ${FLUENT_ELASTICSEARCH_HOST}
+        #   port: ${FLUENT_ELASTICSEARCH_PORT}
+        #   http_user: ${FLUENT_ELASTICSEARCH_USER}
+        #   http_passwd: ${FLUENT_ELASTICSEARCH_PASSWORD}
+        #   # Indexes are created following logstash format <logstash_prefix>-<YYYY-mm-dd>
+        #   logstash_format: true
+        #   logstash_prefix: fluentbit
+        #   # Mandatory for ES 8.x
+        #   suppress_type_name: true
+        #   # Disable TLS
+        #   tls: false
+        #   # Disable limit in retries
+        #   retry_limit: false
+        # - name: loki
+        #   alias: output.loki
+        #   match: '*'
+        #   host: ${FLUENT_LOKI_HOST}
+        #   port: ${FLUENT_LOKI_PORT}
+        #   labels: job=fluentbit
+        #   label_keys: $app, $container, $pod, $namespace, $host, $filename
+        #   line_format: json
+        #   # Disable TLS
+        #   tls: false
+        #    # Disable limit in retries
+        #   retry_limit: false
+        - name: forward
+          alias: output.aggregator
+          match: '*'
+          host: ${FLUENT_AGGREGATOR_HOST}
+          port: ${FLUENT_AGGREGATOR_PORT}
+          self_hostname: ${FLUENT_SELFHOSTNAME}
+          shared_key: ${FLUENT_AGGREGATOR_SHARED_KEY}
+          tls: true
+          tls.verify: false
