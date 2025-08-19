@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kafka-cert
+spec:
+  secretName: kafka-tls
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  subject:
+    organizations:
+      - local.test
+  dnsNames:
+    - kafka-bootstrap.local.test
+    - kafka-broker-1.local.test
+    - kafka-broker-2.local.test
+    - kafka-broker-3.local.test
