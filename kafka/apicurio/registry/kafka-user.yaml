@@ -1,0 +1,40 @@
+
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  name: apicurio
+  labels:
+    strimzi.io/cluster: cluster
+  namespace: kafka
+spec:
+  authentication:
+    type: scram-sha-512
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: apicurio-secrets
+          key: apicurio-password
+  authorization:
+    acls:
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: topic
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: cluster
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: transactionalId
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: group
+    type: simple
+

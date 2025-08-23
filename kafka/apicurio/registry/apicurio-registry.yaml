@@ -1,0 +1,49 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: apicurioregistry
+spec:
+  app:
+    ingress:
+      host: apicurio-app.local.test
+      ingressClassName: nginx
+    storage:
+      type: postgresql
+      sql:
+        dataSource:
+          url: jdbc:postgresql://apicurio-db-rw:5432/apicurio
+          username: apicurio
+          password:
+            key: password
+            name: apicurio-db-secret
+    podTemplateSpec:
+      spec:
+        containers:
+          - name: apicurio-registry-app
+            resources: {}
+              # requests:
+              #   memory: "1Gi"
+              #   cpu: "250m"
+              # limits:
+              #   memory: "2Gi"
+              #   cpu: "500m"
+      # type: kafkasql
+      # kafkasql:
+      #   bootstrapServers: "cluster-kafka-bootstrap:9092"
+      #   auth:
+      #     enabled: false
+      #     mechanism: SCRAM-SHA-512
+  ui:
+    ingress:
+      host: apicurio-ui.local.test
+      ingressClassName: nginx
+  # configuration:
+  #   persistence: "kafkasql"
+  #   kafkasql:
+  #     bootstrapServers: "cluster-kafka-bootstrap:9092"
+  #     security:
+  #       scram:
+  #         # truststoreSecretName: my-cluster-cluster-ca-cert
+  #         user: apicurio
+  #         passwordSecretName: s3cr3t
+
