@@ -39,7 +39,7 @@ spec:
             annotations:
               external-dns.alpha.kubernetes.io/hostname: kafka-bootstrap.local.test.
               external-dns.alpha.kubernetes.io/ttl: "60"
-            host: kafka-bootstrap.example.com
+            host: kafka-bootstrap.local.test
           brokers:
             - broker: 0
               annotations:
