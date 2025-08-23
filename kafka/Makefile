@@ -45,8 +45,8 @@ kafdrop:
 
 kafka-clients:
 	kubectl run kafka-clients --restart='Never' --image quay.io/strimzi/kafka:0.47.0-kafka-4.0.0 --namespace kafka --command -- sleep infinity
-	kubectl cp producer.properties kafka/kafka-clients:/tmp/producer.properties
-	kubectl cp consumer.properties kafka/kafka-clients:/tmp/consumer.properties
+	kubectl cp properties/producer.properties kafka/kafka-clients:/tmp/producer.properties
+	kubectl cp properties/consumer.properties kafka/kafka-clients:/tmp/consumer.properties
 
 kafka-producer:
 	kubectl exec -it kafka-clients --namespace kafka -- bin/kafka-console-producer.sh \
