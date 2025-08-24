@@ -1,0 +1,28 @@
+services:
+  kafka-client:
+    image: quay.io/strimzi/kafka:0.47.0-kafka-4.0.0
+    container_name: kafka-client
+    volumes:
+      - ./properties:/tmp/properties
+      - ./certs:/tmp/certs
+    extra_hosts:
+      - kafka-bootstrap.local.test:host-gateway
+      - kafka-broker-0.local.test:host-gateway
+      - kafka-broker-1.local.test:host-gateway
+      - kafka-broker-2.local.test:host-gateway
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - | 
+        keytool -import -trustcacerts -alias root -file /tmp/certs/ca.crt -keystore /tmp/truststore.jks -storepass supers1cret0 -noprompt && 
+        while [ true ]; do sleep 30; done;
+  # kafka-client-avro:
+  #   image:
+  #   container_name: kafka-client-avro
+  #   volumes:
+  #     - ./properties":/tmp/properties
+  #   extra_hosts:
+  #     - ${BROKER_HOSTNAME}:host-gateway
+  #   restart: unless-stopped
+  #   command: ["sh", "-c", "while [ true ]; do sleep 30; done;"]

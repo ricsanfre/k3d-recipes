@@ -2,3 +2,5 @@
 
 controller:
   allowSnippetAnnotations: true
+  extraArgs:
+    enable-ssl-passthrough: true

@@ -1,4 +1,4 @@
-.PHONY: all clean base helm-setup strimzi-operator-install confluent-operator-install cnpg-install kafka-cluster kafka-clients kafka-producer kafka-consumer kafdrop apicurio-operator apicurio-registry
+.PHONY: all clean base helm-setup strimzi-operator-install confluent-operator-install cnpg-install kafka-cluster kafka-clients kafka-producer kafka-consumer kafdrop apicurio-operator apicurio-registry remote-kafka-client remote-kafka-producer remote-kafka-consumer kafka-avro-clients kafka-avro-producer
 
 default:
 	all
@@ -45,19 +45,35 @@ kafdrop:
 
 kafka-clients:
 	kubectl run kafka-clients --restart='Never' --image quay.io/strimzi/kafka:0.47.0-kafka-4.0.0 --namespace kafka --command -- sleep infinity
-	kubectl cp properties/producer.properties kafka/kafka-clients:/tmp/producer.properties
-	kubectl cp properties/consumer.properties kafka/kafka-clients:/tmp/consumer.properties
+	kubectl cp clients/properties/producer.properties kafka/kafka-clients:/tmp/producer.properties
+	kubectl cp clients/properties/consumer.properties kafka/kafka-clients:/tmp/consumer.properties
 
 kafka-producer:
 	kubectl exec -it kafka-clients --namespace kafka -- bin/kafka-console-producer.sh \
-	--producer.config /tmp/producer.properties \
+	--producer.config clients/tmp/producer.properties \
 	--bootstrap-server cluster-kafka-bootstrap:9092 \
 	--topic test-topic
 
 kafka-consumer:
 	kubectl exec -it kafka-clients --namespace kafka -- bin/kafka-console-consumer.sh \
-	--consumer.config /tmp/consumer.properties \
+	--consumer.config clients/tmp/consumer.properties \
 	--bootstrap-server cluster-kafka-bootstrap:9092 \
+	--topic test-topic \
+	--group test-consumer-group --from-beginning
+
+remote-kafka-client:
+	cd clients && $(MAKE) $@
+
+remote-kafka-producer:
+	docker exec -it kafka-client bin/kafka-console-producer.sh \
+	--producer.config /tmp/properties/producer_ssl.properties \
+	--bootstrap-server kafka-bootstrap.local.test:443 \
+	--topic test-topic
+
+remote-kafka-consumer:
+	docker exec -it kafka-client bin/kafka-console-consumer.sh \
+	--consumer.config /tmp/properties/consumer_ssl.properties \
+	--bootstrap-server kafka-bootstrap.local.test:443 \
 	--topic test-topic \
 	--group test-consumer-group --from-beginning
 

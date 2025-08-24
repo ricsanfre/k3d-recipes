@@ -13,6 +13,6 @@ spec:
       - local.test
   dnsNames:
     - kafka-bootstrap.local.test
+    - kafka-broker-0.local.test
     - kafka-broker-1.local.test
     - kafka-broker-2.local.test
-    - kafka-broker-3.local.test
