@@ -85,11 +85,25 @@ apicurio-db:
 apicurio-registry:
 	kubectl kustomize apicurio/registry | kubectl apply -f -
 
-kafka-avro-clients:
-	kubectl run kafka-clients --restart='Never' --image ricsanfre/kafka-python-client:latest --namespace kafka --command -- sleep infinity
-	kubectl cp producer.properties kafka/kafka-clients:/tmp/producer.properties
-	kubectl cp consumer.properties kafka/kafka-clients:/tmp/consumer.properties
-
 kafka-avro-producer:
-	kubectl exec -it kafka-clients --namespace kafka -- python avro_producer.py \
-	   -b cluster-kafka-bootstrap:9092 -s http://apicurioregistry-app-service:8080/apis/ccompat/v7 -t test-topic
+	docker exec -it kafka-client-avro python3 avro_producer.py \
+	-b kafka-bootstrap.local.test:443 \
+	-s http://apicurio-app.local.test/apis/ccompat/v7 \
+	-t test-topic \
+	-m SCRAM-SHA-512 \
+	--tls true \
+	--cacert /tmp/certs/ca.crt \
+	--user producer \
+	--password supers1cret0
+
+kafka-avro-consumer:
+	docker exec -it kafka-client-avro python3 avro_consumer.py \
+	-b kafka-bootstrap.local.test:443 \
+	-s http://apicurio-app.local.test/apis/ccompat/v7 \
+	-t test-topic \
+	-m SCRAM-SHA-512 \
+	-g test-consumer-group \
+	--tls true \
+	--cacert /tmp/certs/ca.crt \
+	--user consumer \
+	--password s1cret0
