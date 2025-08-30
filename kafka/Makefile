@@ -15,6 +15,7 @@ base:
 helm-setup:
 	helm repo add strimzi https://strimzi.io/charts/
 	helm repo add confluentinc https://packages.confluent.io/helm
+	helm repo add bitnami https://charts.bitnami.com/bitnami
 	helm repo add ricsanfre https://ricsanfre.github.io/helm-charts/
 	helm repo add cnpg https://cloudnative-pg.github.io/charts
 	helm repo update
@@ -77,6 +78,29 @@ remote-kafka-consumer:
 	--topic test-topic \
 	--group test-consumer-group --from-beginning
 
+remote-kafka-command:
+	docker exec -it kafka-client bin/command.sh \
+	--config /tmp/properties/admin_ssl.properties \
+	--bootstrap-server kafka-bootstrap.local.test:443 \
+
+show-kafka-acls:
+	docker exec -it kafka-client bin/kafka-acls.sh \
+	--command-config /tmp/properties/admin_ssl.properties \
+	--bootstrap-server kafka-bootstrap.local.test:443 \
+	--list	
+
+show-kafka-topics:
+	docker exec -it kafka-client bin/kafka-topics.sh \
+	--command-config /tmp/properties/admin_ssl.properties \
+	--bootstrap-server kafka-bootstrap.local.test:443 \
+	--list
+
+schema-registry-operator:
+	kubectl kustomize schema-registry | kubectl apply -f -
+
+schema-registry-bitnami:
+	helm upgrade --install schema-registry bitnami/schema-registry -f schema-registry/schema-registry-bitnami-values.yaml --namespace kafka
+
 apicurio-operator:
 	curl -sSL "https://raw.githubusercontent.com/Apicurio/apicurio-registry/v3.0.12/operator/install/install.yaml" | sed "s/PLACEHOLDER_NAMESPACE/kafka/g" | kubectl -n kafka apply -f -
 
@@ -100,6 +124,29 @@ kafka-avro-consumer:
 	docker exec -it kafka-client-avro python3 avro_consumer.py \
 	-b kafka-bootstrap.local.test:443 \
 	-s http://apicurio-app.local.test/apis/ccompat/v7 \
+	-t test-topic \
+	-m SCRAM-SHA-512 \
+	-g test-consumer-group \
+	--tls true \
+	--cacert /tmp/certs/ca.crt \
+	--user consumer \
+	--password s1cret0
+
+kafka-avro-producer-2:
+	docker exec -it kafka-client-avro python3 avro_producer.py \
+	-b kafka-bootstrap.local.test:443 \
+	-s https://schema-registry.local.test \
+	-t test-topic \
+	-m SCRAM-SHA-512 \
+	--tls true \
+	--cacert /tmp/certs/ca.crt \
+	--user producer \
+	--password supers1cret0
+
+kafka-avro-consumer-2:
+	docker exec -it kafka-client-avro python3 avro_consumer.py \
+	-b kafka-bootstrap.local.test:443 \
+	-s https://schema-registry.local.test  \
 	-t test-topic \
 	-m SCRAM-SHA-512 \
 	-g test-consumer-group \

@@ -1,0 +1,44 @@
+# schema-registry helm values (base)
+
+# Disable Kafka sub-chart installation
+kafka:
+  enabled: false
+# Configure external Kafka
+
+externalKafka:
+  ## @param externalKafka.brokers Array of Kafka brokers to connect to. Format: protocol://broker_hostname:port
+  ##
+  brokers:
+    - SASL_PLAINTEXT://cluster-kafka-bootstrap:9092
+  ## @param externalKafka.listener.protocol Kafka listener protocol. Allowed protocols: PLAINTEXT, SASL_PLAINTEXT, SASL_SSL and SSL
+  ##
+  listener:
+    protocol: SASL_PLAINTEXT
+  ## Authentication parameters
+  ## @param externalKafka.sasl.user User for SASL authentication
+  ## @param externalKafka.sasl.password Password for SASL authentication
+  ## @param externalKafka.sasl.existingSecret Name of the existing secret containing a password for SASL authentication (under the key named "client-passwords")
+  ##
+  sasl:
+    user: schema-registry
+    # password: ""
+    existingSecret: schema-registry-secrets
+
+extraEnvVars:
+  # Setting name of Kafka Topic instead of usign default _schemas
+  - name: KAFKA_CFG_KAFKASTORE_TOPIC
+    value: confluent-schemas
+
+auth:
+  tls:
+    enabled: false
+  kafka:
+    saslMechanism: SCRAM-SHA-512
+  protocol: {}
+service:
+  ports:
+    client: {}
+
+# Disabling network policy created by Bitnami Helm Chart
+networkPolicy:
+  enabled: false

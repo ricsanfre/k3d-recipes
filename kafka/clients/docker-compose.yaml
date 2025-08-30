@@ -28,5 +28,6 @@ services:
       - kafka-broker-1.local.test:host-gateway
       - kafka-broker-2.local.test:host-gateway
       - apicurio-app.local.test:host-gateway
+      - schema-registry.local.test:host-gateway
     restart: unless-stopped
     command: ["sh", "-c", "while [ true ]; do sleep 30; done;"]

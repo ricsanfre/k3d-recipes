@@ -1,0 +1,17 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: SchemaRegistry
+metadata:
+  name: schemaregistry
+  namespace: kafka
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-schema-registry:7.9.0
+    init: confluentinc/confluent-init-container:3.0.0
+  dependencies:
+    kafka:
+      bootstrapEndpoint: cluster-kafka-bootstrap:9092
+      authentication:
+        type: plain
+        jaasConfigPassThrough:
+          secretRef: schema-registry-secrets

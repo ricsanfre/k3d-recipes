@@ -64,6 +64,9 @@ spec:
           class: nginx
     authorization:
       type: simple # Authorization using ACLS
+      # super user
+      superUsers:
+        - admin # Matches the KafkaUser metadata.name
     config:
       offsets.topic.replication.factor: 3
       transaction.state.log.replication.factor: 3
