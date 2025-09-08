@@ -1,4 +1,4 @@
-.PHONY: all clean base helm-setup strimzi-operator-install confluent-operator-install cnpg-install kafka-cluster kafka-clients kafka-producer kafka-consumer kafdrop apicurio-operator apicurio-registry remote-kafka-client remote-kafka-producer remote-kafka-consumer kafka-avro-clients kafka-avro-producer
+.PHONY: all clean base helm-setup strimzi-operator-install confluent-operator-install cnpg-install kafka-cluster schema-registry kafka-clients kafka-producer kafka-consumer kafdrop apicurio-operator apicurio-registry remote-kafka-client remote-kafka-producer remote-kafka-consumer kafka-avro-clients kafka-avro-producer
 
 default:
 	all
@@ -32,11 +32,6 @@ confluent-operator-install:
 cnpg-install:
 	helm install cloudnative-pg cnpg/cloudnative-pg --namespace databases --create-namespace \
 	 --set crds.create=true
-
-monitoring:
-  podMonitorEnabled: false
-  grafanaDashboard:
-    create: true
 
 kafka-cluster:
 	kubectl kustomize cluster | kubectl apply -f -
@@ -95,7 +90,7 @@ show-kafka-topics:
 	--bootstrap-server kafka-bootstrap.local.test:443 \
 	--list
 
-schema-registry-operator:
+schema-registry:
 	kubectl kustomize schema-registry | kubectl apply -f -
 
 schema-registry-bitnami:
@@ -136,6 +131,8 @@ kafka-avro-producer-2:
 	docker exec -it kafka-client-avro python3 avro_producer.py \
 	-b kafka-bootstrap.local.test:443 \
 	-s https://schema-registry.local.test \
+	-su client \
+	-sp s1cret0 \
 	-t test-topic \
 	-m SCRAM-SHA-512 \
 	--tls true \
@@ -147,6 +144,8 @@ kafka-avro-consumer-2:
 	docker exec -it kafka-client-avro python3 avro_consumer.py \
 	-b kafka-bootstrap.local.test:443 \
 	-s https://schema-registry.local.test  \
+	-su client \
+	-sp s1cret0 \
 	-t test-topic \
 	-m SCRAM-SHA-512 \
 	-g test-consumer-group \

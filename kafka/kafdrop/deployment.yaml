@@ -42,7 +42,8 @@ spec:
         - name: SERVER_PORT
           value: "9000"
         - name: CMD_ARGS
-          value: --schemaregistry.connect=http://apicurioregistry-app-service:8080/apis/ccompat/v7
+          # value: --schemaregistry.connect=http://apicurioregistry-app-service:8080/apis/ccompat/v7
+          value: --schemaregistry.connect=http://schema-registry:8081 --schemaregistry.auth=kafdrop:supers1creto
         readinessProbe:
           failureThreshold: 3
           httpGet:
