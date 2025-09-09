@@ -124,7 +124,7 @@ spec:
             successThreshold: 1
             failureThreshold: 6
           volumeMounts:
-            - name: passwords
+            - name: tmp
               mountPath: /tmp
               readOnly: true
             - name: config-auth
@@ -150,9 +150,13 @@ spec:
       volumes:
         - name: config
           emptyDir: {}
-        - name: passwords
-          secret:
-            secretName: schema-registry-passwords
+        - name: tmp
+          emptyDir: {}
         - name: config-auth
-          configMap:
-            name: schema-registry-jaas
+          projected:
+            sources:
+              - secret:
+                  name: schema-registry-passwords
+              - configMap:
+                  name: schema-registry-jaas
+
