@@ -9,6 +9,27 @@ default:
 
 vault-install: vault-start vault-init vault-unseal
 
+certs/rootCA.crt:
+	openssl req -x509 \
+       -sha256 \
+       -nodes \
+       -newkey rsa:4096 \
+       -subj "/CN=Ricsanfre CA" \
+       -keyout certs/rootCA.key -out certs/rootCA.crt
+
+certs/vault.key:
+	openssl genrsa -out certs/vault.key 4096
+
+certs/vault.csr: certs/vault.key certs/vault-cert.conf certs/vault-cert.conf
+	openssl req -new -nodes -key certs/vault.key -out certs/vault.csr -config certs/vault-cert.conf
+
+certs/vault.crt: certs/rootCA.crt certs/rootCA.key certs/vault.csr certs/vault-cert.conf
+	openssl x509 -req -in certs/vault.csr \
+	   -extfile certs/vault-cert.conf -extensions v3_req \
+	   -CA certs/rootCA.crt -CAkey certs/rootCA.key -CAcreateserial \
+	   -out certs/vault.crt -days 500 -sha256
+
+
 vault-start:
 	docker compose up -d
 
