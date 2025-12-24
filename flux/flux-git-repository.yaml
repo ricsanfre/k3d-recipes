@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: k3d-recipes
+  namespace: flux-system
+spec:
+  interval: 30s
+  url: https://github.com/ricsanfre/k3d-recipes
+  ref:
+    branch: main
