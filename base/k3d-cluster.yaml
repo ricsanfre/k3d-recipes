@@ -4,6 +4,10 @@ metadata:
   name: mycluster
 servers: ${K3D_SERVERS}
 agents: ${K3D_AGENTS}
+kubeAPI: # same as `--api-port myhost.my.domain:6445` (where the name would resolve to 127.0.0.1)
+  host: "kube-api.local.test" # important for the `server` setting in the kubeconfig
+  hostPort: "6445"
+
 # Export traefik/nginx port
 # Available at http://localhost and https://localhost
 ports:
@@ -16,13 +20,18 @@ ports:
 hostAliases: # /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS
   - ip: 172.17.0.1
     hostnames:
+      - kube-api.local.test 
       - keycloak.local.test
       - proxy-auth.local.test
       - monitoring.local.test
       - kibana.local.test
+      - vault.local.test
 options:
   k3s:
     extraArgs:
+      - arg: --tls-san=172.17.0.1
+        nodeFilters:
+          - server:*
       - arg: --kube-proxy-arg=metrics-bind-address=0.0.0.0
         nodeFilters:
           - server:*

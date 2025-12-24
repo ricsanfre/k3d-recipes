@@ -1,6 +1,6 @@
 services:  
   vault:  
-    image: hashicorp/vault
+    image: hashicorp/vault:1.21
     container_name: vault
     ports:
       - "8200:8200"
@@ -20,3 +20,6 @@ services:
     cap_add:
       - IPC_LOCK
     entrypoint: vault server -config /vault/config/config.hcl
+    extra_hosts:
+     - kube-api.local.test:host-gateway
+
