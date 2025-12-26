@@ -17,7 +17,7 @@ variable "vault_token" {
 }
 
 variable "vault_skip_tls_verify" {
-  type        = boolean
+  type        = bool
   description = "Skip TLS verification when connecting to Vault"
   default     = true
 }
