@@ -13,6 +13,5 @@ variable "vault_address" {
 variable "vault_token" {
   type        = string
   description = "Vault token to be used during authentication"
-  default     = null
   sensitive   = true
 }
