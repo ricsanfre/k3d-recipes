@@ -21,3 +21,9 @@ provider "kubernetes" {
   // ref: https://search.opentofu.org/provider/opentofu/kubernetes/latest#in-cluster-config
   // ref: https://github.com/hashicorp/terraform-provider-kubernetes/tree/main/_examples/in-cluster
 }
+
+provider "vault" {
+  # Configuration options
+  address = var.vault_address
+  token   = var.vault_token
+}
