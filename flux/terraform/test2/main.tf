@@ -32,7 +32,7 @@ provider "vault" {
   address         = var.vault_address
   skip_tls_verify = var.vault_skip_tls_verify
   auth_login {
-    path = "kubernetes"
+    path = "auth/kubernetes/login"
     parameters = {
       role = "${var.vault_k8s_role}"
       jwt  = "${file("${var.vault_k8s_token_path}")}"
