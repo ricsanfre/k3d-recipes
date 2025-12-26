@@ -15,3 +15,9 @@ variable "vault_token" {
   description = "Vault token to be used during authentication"
   sensitive   = true
 }
+
+variable "vault_skip_tls_verify" {
+  type        = boolean
+  description = "Skip TLS verification when connecting to Vault"
+  default     = true
+}

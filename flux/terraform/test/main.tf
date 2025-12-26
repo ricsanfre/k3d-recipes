@@ -24,6 +24,7 @@ provider "kubernetes" {
 
 provider "vault" {
   # Configuration options
-  address = var.vault_address
-  token   = var.vault_token
+  address         = var.vault_address
+  token           = var.vault_token
+  skip_tls_verify = var.vault_skip_tls_verify
 }
