@@ -24,10 +24,21 @@ resource "vault_kubernetes_auth_backend_config" "example" {
 }
 
 # Create a role for Kubernetes authentication
-resource "vault_kubernetes_auth_backend_role" "read-only" {
+resource "vault_kubernetes_auth_backend_role" "external-secrets" {
   backend                          = vault_auth_backend.kubernetes.path
-  role_name                        = "read-only"
-  bound_service_account_names      = ["default"]
+  role_name                        = "external-secrets"
+  bound_service_account_names      = ["external-secrets"]
+  bound_service_account_namespaces = ["external-secrets"]
+  token_policies                   = ["readonly"]
+  audience                         = "https://kubernetes.default.svc.cluster.local"
+}
+
+# Create a role for Kubernetes authentication
+resource "vault_kubernetes_auth_backend_role" "debug" {
+  backend                          = vault_auth_backend.kubernetes.path
+  role_name                        = "debug"
+  bound_service_account_names      = ["debug"]
   bound_service_account_namespaces = ["default"]
   token_policies                   = ["readonly"]
+  audience                         = "https://kubernetes.default.svc.cluster.local"
 }
