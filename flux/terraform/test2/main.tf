@@ -27,15 +27,25 @@ provider "kubernetes" {
 }
 
 
-provider "vault" {
-  # Configuration options
-  address         = var.vault_address
-  skip_tls_verify = var.vault_skip_tls_verify
-  auth_login {
-    path = "auth/kubernetes/login"
-    parameters = {
-      role = "${var.vault_k8s_role}"
-      jwt  = "${file("${var.vault_k8s_token_path}")}"
-    }
+# provider "vault" {
+#   # Configuration options
+#   address         = var.vault_address
+#   skip_tls_verify = var.vault_skip_tls_verify
+#   auth_login {
+#     path = "auth/kubernetes/login"
+#     parameters = {
+#       role = "${var.vault_k8s_role}"
+#       jwt  = "${file("${var.vault_k8s_token_path}")}"
+#     }
+#   }
+# }
+
+provider "vault" {                                                                                                                                                                                                                                                              
+    address = var.vault_address
+    skip_tls_verify = var.vault_skip_tls_verify                                                                                                                                                                                                                                      
+    auth_login_jwt {                                                                                                                                                                                                                                                           
+      mount = "kubernetes"                                                                                                                                                                                                                                                 
+      role = "${var.vault_k8s_role}"                                                                                                                                                                                                                                                        
+      jwt = file("${var.vault_k8s_token_path}")                                                                                                                                                                                                            
+    }                                                                                                                                                                                                                                                                          
   }
-}
