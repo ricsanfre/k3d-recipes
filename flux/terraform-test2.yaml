@@ -1,26 +1,14 @@
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: vault-credentials
-  namespace: flux-system
-type: Opaque
-# echo $VAULT_TOKEN | tr -d "\n" | base64
-data:
-  vault_token: |2
-    aHZzLnFESkZ3S1FqWFNBbkR3NUdPVGl5NGpOUQ==
 
----
 apiVersion: infra.contrib.fluxcd.io/v1alpha2
 kind: Terraform
 metadata:
-  name: test
+  name: test2
   namespace: flux-system
 spec:
   interval: 1m
   approvePlan: auto
   destroyResourcesOnDeletion: true
-  path: ./flux/terraform/test
+  path: ./flux/terraform/test2
   sourceRef:
     kind: GitRepository
     name: k3d-recipes
@@ -30,8 +18,15 @@ spec:
     value: https://vault.local.test:8200
   - name: kubernetes_host
     value: https://kube-api.local.test:6445
-  varsFrom:
-  - kind: Secret
-    name: vault-credentials
   writeOutputsToSecret:
-    name: tf-test-output
+    name: tf-test2-output
+
+  # TF_LOG debugging not supported
+  # ref: https://github.com/flux-iac/tofu-controller/issues/1373
+  # runnerPodTemplate:
+  #   spec:
+  #     env:
+  #     - name: TF_LOG
+  #       value: DEBUG
+  #     - name: TERRAFORM_VAULT_LOG_BODY
+  #       value: "true"
