@@ -39,6 +39,6 @@ resource "vault_kubernetes_auth_backend_role" "tf-runner" {
   role_name                        = "tf-runner"
   bound_service_account_names      = ["tf-runner"]
   bound_service_account_namespaces = ["flux-system"]
-  token_policies                   = ["readonly" , "create-token"]
+  token_policies                   = ["readonly" , "create-child-token"]
   audience                         = "https://kubernetes.default.svc.cluster.local"
 }

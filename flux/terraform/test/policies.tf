@@ -20,11 +20,11 @@ resource "vault_policy" "readwrite" {
 }
 
 # Token management
-resource "vault_policy" "create-token" {
+resource "vault_policy" "create-child-token" {
   name   = "create-token"
   policy = <<-EOT
     path "auth/token/create" {
-        capabilities = [ "create", "read", "update", "delete", "list" ]
+        capabilities = [ "update" ]
     }
     EOT
 }
