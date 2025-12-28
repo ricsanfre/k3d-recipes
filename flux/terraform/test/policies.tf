@@ -24,7 +24,7 @@ resource "vault_policy" "create-child-token" {
   name   = "create-token"
   policy = <<-EOT
     path "auth/token/create" {
-        capabilities = [ "create" ]
+        capabilities = [ "create", "read", "update", "delete", "list"]
     }
     EOT
 }
