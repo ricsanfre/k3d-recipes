@@ -7,5 +7,17 @@ variable "kubernetes_host" {
 variable "vault_address" {
   type        = string
   description = "The address of the Vault server"
-  default     = "http://vault.local.test:8200"
+  default     = "http://vault.com:8200"
+}
+
+variable "vault_token" {
+  type        = string
+  description = "Vault token to be used during authentication"
+  sensitive   = true
+}
+
+variable "vault_skip_tls_verify" {
+  type        = bool
+  description = "Skip TLS verification when connecting to Vault"
+  default     = true
 }

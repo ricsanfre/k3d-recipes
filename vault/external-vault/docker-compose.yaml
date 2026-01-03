@@ -13,8 +13,7 @@ services:
       # Self-signed certificate
       VAULT_CACERT: "/certs/rootCA.crt"
     volumes:
-      - ./logs:/vault/logs/:rw
-      - ./data:/vault/data/:rw
+      - vault-data:/vault/data/:rw
       - ./config:/vault/config/:rw
       - ./certs:/certs/:rw
     cap_add:
@@ -23,3 +22,5 @@ services:
     extra_hosts:
      - kube-api.local.test:host-gateway
 
+volumes:
+  vault-data:

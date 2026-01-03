@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.0.0"
   required_providers {
     random = {
-      source  = "opentofu/random"
+      source  = "hashicorp/random"
       version = "3.7.2"
     }
     vault = {
@@ -26,5 +26,7 @@ provider "kubernetes" {
 
 provider "vault" {
   # Configuration options
-  address = var.vault_address
+  address         = var.vault_address
+  token           = var.vault_token
+  skip_tls_verify = var.vault_skip_tls_verify
 }
